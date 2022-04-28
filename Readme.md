@@ -1,5 +1,13 @@
 ### This repository created by [Pavel Filippenko](https://github.com/pavel-collab), [Mikhail Ovsiannikov](https://github.com/OAMichael) and [Barannikov Andrey](https://github.com/barannikovav).
 
+### Понадобится установить следующее:
+```console
+pip install psutil
+```
+А также 
+```console
+pip install xprintidle
+```
 
 #### Пока что скрипт получает некоторую информацию о пользователе (работнике). Сначала он выводит для каждого процесса:
 - PID
