@@ -6,6 +6,7 @@ from datetime import datetime
 import time
 import os
 import warnings
+from xdo import Xdo
 
 def get_processes_info():
     processes = []
@@ -117,6 +118,46 @@ def get_processes_info():
     return processes
 
 
+def get_processes_info_reduced():
+    processes = []
+    for process in psutil.process_iter():
+        # get all process info in one shot
+        with process.oneshot():
+
+            # get the name of the file executed (string)
+            name = process.name()
+
+            # get the time the process was spawned
+            try:
+                create_time = str(datetime.fromtimestamp(process.create_time()))
+            except OSError:
+                # system processes, using boot time instead
+                create_time = str(datetime.fromtimestamp(psutil.boot_time()))
+            
+             # get the status of the process (running, idle, etc.) (string)
+            status = process.status()
+
+            rss = 0
+            vms = 0
+            shared = 0
+            data = 0
+            try:
+            # get the memory usage (list or tuple)
+                memory_usage = process.memory_full_info()
+                rss    = memory_usage.rss
+                vms    = memory_usage.vms
+                shared = memory_usage.shared
+                data   = memory_usage.data
+            except psutil.AccessDenied:
+                pass
+
+            processes.append(tuple( (name, create_time, status, rss, vms, shared, data) ))
+
+    return processes
+
+
+
+
 def get_integral_info():
     cpu_freq = psutil.cpu_freq()
     boot_time = datetime.fromtimestamp(psutil.boot_time())
@@ -146,28 +187,49 @@ def get_integral_info():
 
 def main():
 
-    warnings.filterwarnings("ignore")
-    
-    processes = get_processes_info()
+    while True:
+        warnings.filterwarnings("ignore")
+        
+        processes = get_processes_info_reduced()
 
-    for proc in processes:
-        print('======================================================================')
-        for info in proc:
-            if not proc[info]:
-                proc[info] = 0
-            print("{0:<30s}".format(info + ':'), proc[info])
+        for proc in processes:
+            print(proc)
 
-    print("######################### Integral info ##############################")
-    integral_info = get_integral_info()
-    for info in integral_info:
-        if not integral_info[info]:
-            integral_info[info] = 0
-        print("{0:<30s}".format(info + ':'), integral_info[info])
+        print("######################### Integral info ##############################")
+        integral_info = get_integral_info()
+        for info in integral_info:
+            if not integral_info[info]:
+                integral_info[info] = 0
+            print("{0:<30s}".format(info + ':'), integral_info[info])
 
 
-    print("{0:<30s}".format("Number of processes:"), len(processes))
+        print("{0:<30s}".format("Number of processes:"), len(processes))
 
 
+
+        xdo = Xdo()
+        
+        try:
+            xdo_window_id = xdo.get_active_window()
+            xdo_window_name = xdo.get_window_name(xdo_window_id).decode('UTF-8')
+            print("{0:<30s}".format("Current window id:"), xdo_window_id)
+            print("{0:<30s}".format("Current window name:"), xdo_window_name)
+        except:
+            pass
+
+        mouse_loc = xdo.get_mouse_location()
+        print("{0:<30s}".format("Current mouse location:"), f"({mouse_loc.x}, {mouse_loc.y})")
+
+        try:
+            window_at_mouse_id   = xdo.get_window_at_mouse()
+            window_at_mouse_name = xdo.get_window_name(window_at_mouse_id).decode('UTF-8')
+
+            print("{0:<30s}".format("Window at mouse id:"),   window_at_mouse_id)
+            print("{0:<30s}".format("Window at mouse name:"), window_at_mouse_name)
+        except:
+            pass
+
+        time.sleep(5)
 
 if __name__ == '__main__':
     main()
