@@ -187,49 +187,49 @@ def get_integral_info():
 
 def main():
 
-    while True:
-        warnings.filterwarnings("ignore")
-        
-        processes = get_processes_info_reduced()
+    #while True:
+    warnings.filterwarnings("ignore")
+    
+    processes = get_processes_info_reduced()
 
-        for proc in processes:
-            print(proc)
+    for proc in processes:
+        print(proc)
 
-        print("######################### Integral info ##############################")
-        integral_info = get_integral_info()
-        for info in integral_info:
-            if not integral_info[info]:
-                integral_info[info] = 0
-            print("{0:<30s}".format(info + ':'), integral_info[info])
-
-
-        print("{0:<30s}".format("Number of processes:"), len(processes))
+    print("######################### Integral info ##############################")
+    integral_info = get_integral_info()
+    for info in integral_info:
+        if not integral_info[info]:
+            integral_info[info] = 0
+        print("{0:<30s}".format(info + ':'), integral_info[info])
 
 
+    print("{0:<30s}".format("Number of processes:"), len(processes))
 
-        xdo = Xdo()
-        
-        try:
-            xdo_window_id = xdo.get_active_window()
-            xdo_window_name = xdo.get_window_name(xdo_window_id).decode('UTF-8')
-            print("{0:<30s}".format("Current window id:"), xdo_window_id)
-            print("{0:<30s}".format("Current window name:"), xdo_window_name)
-        except:
-            pass
 
-        mouse_loc = xdo.get_mouse_location()
-        print("{0:<30s}".format("Current mouse location:"), f"({mouse_loc.x}, {mouse_loc.y})")
 
-        try:
-            window_at_mouse_id   = xdo.get_window_at_mouse()
-            window_at_mouse_name = xdo.get_window_name(window_at_mouse_id).decode('UTF-8')
+    xdo = Xdo()
+    
+    try:
+        xdo_window_id = xdo.get_active_window()
+        xdo_window_name = xdo.get_window_name(xdo_window_id).decode('UTF-8')
+        print("{0:<30s}".format("Current window id:"), xdo_window_id)
+        print("{0:<30s}".format("Current window name:"), xdo_window_name)
+    except:
+        pass
 
-            print("{0:<30s}".format("Window at mouse id:"),   window_at_mouse_id)
-            print("{0:<30s}".format("Window at mouse name:"), window_at_mouse_name)
-        except:
-            pass
+    mouse_loc = xdo.get_mouse_location()
+    print("{0:<30s}".format("Current mouse location:"), f"({mouse_loc.x}, {mouse_loc.y})")
 
-        time.sleep(5)
+    try:
+        window_at_mouse_id   = xdo.get_window_at_mouse()
+        window_at_mouse_name = xdo.get_window_name(window_at_mouse_id).decode('UTF-8')
+
+        print("{0:<30s}".format("Window at mouse id:"),   window_at_mouse_id)
+        print("{0:<30s}".format("Window at mouse name:"), window_at_mouse_name)
+    except:
+        pass
+
+        #time.sleep(5)
 
 if __name__ == '__main__':
     main()
