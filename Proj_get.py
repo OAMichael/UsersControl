@@ -6,7 +6,6 @@ from datetime import datetime
 import time
 import os
 import warnings
-import xprintidle
 
 def get_processes_info():
     processes = []
@@ -166,11 +165,6 @@ def main():
         print("{0:<30s}".format(info + ':'), integral_info[info])
 
 
-    milliseconds_string = os.popen("xprintidle").read()
-    seconds = int(milliseconds_string) // 1000
-    milliseconds = int(milliseconds_string) - seconds * 1000
-    print("{0:<30s}".format('Idle time:'), f'{seconds}.{milliseconds} s')
-    #print(milliseconds_string)
     print("{0:<30s}".format("Number of processes:"), len(processes))
 
 
