@@ -8,6 +8,9 @@ import os
 import warnings
 from xdo import Xdo
 
+# модуль с функциями обработки базы данных
+import DB_modul
+
 def get_processes_info():
     processes = []
     for process in psutil.process_iter():
@@ -117,7 +120,6 @@ def get_processes_info():
 
     return processes
 
-
 def get_processes_info_reduced():
     processes = []
     for process in psutil.process_iter():
@@ -155,9 +157,6 @@ def get_processes_info_reduced():
 
     return processes
 
-
-
-
 def get_integral_info():
     cpu_freq = psutil.cpu_freq()
     boot_time = datetime.fromtimestamp(psutil.boot_time())
@@ -184,7 +183,6 @@ def get_integral_info():
     return info
 
 
-
 def main():
 
     #while True:
@@ -193,6 +191,8 @@ def main():
     processes = get_processes_info_reduced()
 
     for proc in processes:
+        # запись информации о каждом процессе в базу данных
+        DB_modul.WriteToDB(proc)
         print(proc)
 
     print("######################### Integral info ##############################")
