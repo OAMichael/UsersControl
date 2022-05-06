@@ -7,6 +7,9 @@ import time
 import os
 import warnings
 from xdo import Xdo
+import gi
+gi.require_version('Wnck', '3.0')
+from gi.repository import Wnck
 
 # модуль с функциями обработки базы данных
 import DB_modul
@@ -183,7 +186,22 @@ def get_integral_info():
     return info
 
 
+def get_winlist():
+    """
+    Get the window list and the active workspace.
+    """
+    scr = Wnck.Screen.get_default()
+    scr.force_update()
+    windows = scr.get_windows()
+    active_wspace = scr.get_active_workspace()
+
+    return windows, active_wspace
+
+
 def main():
+
+    win_activ = {}
+    n = 0
 
     #while True:
     warnings.filterwarnings("ignore")
@@ -205,8 +223,16 @@ def main():
 
     print("{0:<30s}".format("Number of processes:"), len(processes))
 
+    print("######################### Opened windows #############################")
+
+    wlist, active_wspace = get_winlist()
+    
+    for w in wlist:
+        #if w.is_visible_on_workspace(active_wspace):
+        print(w.get_name())
 
 
+    print("######################### Current window #############################")
     xdo = Xdo()
     
     try:
@@ -214,6 +240,39 @@ def main():
         xdo_window_name = xdo.get_window_name(xdo_window_id).decode('UTF-8')
         print("{0:<30s}".format("Current window id:"), xdo_window_id)
         print("{0:<30s}".format("Current window name:"), xdo_window_name)
+
+        if xdo_window_name in win_activ.keys():
+            win_activ[xdo_window_name] = int(win_activ[xdo_window_name]) + 1
+        else:
+            win_activ[xdo_window_name] = 1
+
+        n += 1
+    except:
+        pass
+
+    values = list(win_activ.values())
+    values_sorted = list(sorted(win_activ.values(), reverse=True))
+    keys   = list(win_activ.keys())
+
+
+    try:
+        window_max_used_1  = keys[values.index(values_sorted[0])]
+        max_used_percent_1 = values_sorted[0] / n * 100
+        print('{0:<30s}'.format("Maximum used window:"), window_max_used_1, '{:0.2f}%'.format(max_used_percent_1, 2))
+    except:
+        pass
+
+    try:
+        window_max_used_2  = keys[values.index(values_sorted[1])]
+        max_used_percent_2 = values_sorted[1] / n * 100
+        print('{0:<30s}'.format("Second maximum used window:"), window_max_used_2, '{:0.2f}%'.format(max_used_percent_2, 2))
+    except:
+        pass
+
+    try:
+        window_max_used_3  = keys[values.index(values_sorted[2])]
+        max_used_percent_3 = values_sorted[2] / n * 100
+        print('{0:<30s}'.format("Third maximum used window:"), window_max_used_3, '{:0.2f}%'.format(max_used_percent_3, 2))
     except:
         pass
 
