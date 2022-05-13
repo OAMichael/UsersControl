@@ -2,7 +2,7 @@
 
 import sys
 import psutil
-from datetime import datetime
+from datetime import datetime, time
 import time
 import os
 import warnings
@@ -11,119 +11,10 @@ import gi
 gi.require_version('Wnck', '3.0')
 from gi.repository import Wnck
 
-# модуль с функциями обработки базы данных
+# modulus to perform database operations
 import DB_modul
 
 def get_processes_info():
-    processes = []
-    for process in psutil.process_iter():
-        # get all process info in one shot
-        with process.oneshot():
-            # get the process id
-            pid = process.pid
-            if pid == 0:
-                continue
-
-
-            try:
-                # Parent pid (number)
-                ppid = process.ppid()
-            except psutil.AccessDenied:
-                ppid = 0
-
-            try:
-                # get the number of total threads spawned by this process
-                n_threads = process.num_threads()
-            except psutil.AccessDenied:
-                n_threads = 1
-
-
-            try:
-                # Number of fds (number)
-                fds  = process.num_fds()
-            except psutil.AccessDenied:
-                fds = 0
-
-            # Percentage (number)
-            memory_percent = process.memory_percent()
-
-            try:
-                # List of named tuples
-                connections = process.connections()
-            except psutil.AccessDenied:
-                connections = 0
-
-            # get the name of the file executed (string)
-            name = process.name()
-
-            # get the time the process was spawned
-            try:
-                create_time = datetime.fromtimestamp(process.create_time())
-            except OSError:
-                # system processes, using boot time instead
-                create_time = datetime.fromtimestamp(psutil.boot_time())
-            
-
-            try:
-            # get the number of CPU cores that can execute this process
-                cores = len(process.cpu_affinity())
-            except psutil.AccessDenied:
-                cores = 0
-            
-            # get the CPU usage percentage (number)
-            cpu_usage = process.cpu_percent()
-
-             # get the status of the process (running, idle, etc.) (string)
-            status = process.status()
-
-
-            try:
-            # get the process priority (a lower value means a more prioritized process) (number)
-                nice = int(process.nice())
-            except psutil.AccessDenied:
-                nice = 0
-            
-            rss = 0
-            vms = 0
-            shared = 0
-            data = 0
-            try:
-            # get the memory usage (list or tuple)
-                memory_usage = process.memory_full_info()
-                rss    = memory_usage.rss
-                vms    = memory_usage.vms
-                shared = memory_usage.shared
-                data   = memory_usage.data
-            except psutil.AccessDenied:
-                pass
-
-            try:
-                # total process read and written bytes (number)
-                io_counters = process.io_counters()
-                read_bytes  = io_counters.read_bytes
-                write_bytes = io_counters.write_bytes
-            except:
-                read_bytes  = 0
-                write_bytes = 0
-
-
-            # get the username of user spawned the process (string)
-            try:
-                username = process.username()
-            except psutil.AccessDenied:
-                username = "N/A"
-
-            processes.append({ 'PID': pid, 'Name': name, 'Create time': create_time,
-            'Cores': cores, 'CPU usage': cpu_usage, 'Status': status, 'Nice value': nice,
-            'Memory consumption(rss)': rss, 'Memory consumption(vms)': vms, 'Memory consumption(shared)': shared,
-            'Memory consumption(data)': data, 'Read bytes': read_bytes, 'Written bytes': write_bytes,
-            'Number of threads': n_threads, 'Username': username, 'PPID': ppid, 
-            'Memory percent': memory_percent, 'Network connections': connections,
-        })
-
-    return processes
-
-def get_processes_info_reduced():
     processes = []
     for process in psutil.process_iter():
         # get all process info in one shot
@@ -139,7 +30,7 @@ def get_processes_info_reduced():
                 # system processes, using boot time instead
                 create_time = str(datetime.fromtimestamp(psutil.boot_time()))
             
-             # get the status of the process (running, idle, etc.) (string)
+             # get the status of the process (running, idle, etc.)
             status = process.status()
 
             rss = 0
@@ -147,7 +38,7 @@ def get_processes_info_reduced():
             shared = 0
             data = 0
             try:
-            # get the memory usage (list or tuple)
+            # get the memory usage
                 memory_usage = process.memory_full_info()
                 rss    = memory_usage.rss
                 vms    = memory_usage.vms
@@ -161,7 +52,10 @@ def get_processes_info_reduced():
     return processes
 
 def get_integral_info():
+    # get CPU frequency
     cpu_freq = psutil.cpu_freq()
+
+    # get boot time of system
     boot_time = datetime.fromtimestamp(psutil.boot_time())
 
 
@@ -169,6 +63,7 @@ def get_integral_info():
             'CPU frequency(max)': str(cpu_freq.max) + ' MHz',                'CPU frequency(current)': str(cpu_freq.current) + ' MHz', 
             'Boot time': boot_time, 'Total memory used': str(psutil.virtual_memory().percent) + '%'}
 
+    # trying to obtain information about cores temperature
     try:
         temps = psutil.sensors_temperatures()
     except RuntimeWarning:
@@ -177,41 +72,35 @@ def get_integral_info():
     if not temps:
         return info
 
-    n = 0
+    num_of_cores = 0
     for name, entries in temps.items():
         for entry in entries:
-            info[f'Core {n} tempereture'] = 'current={0:<6f}\N{DEGREE SIGN}C, high={0:<6f}\N{DEGREE SIGN}C, critical={0:<6f}\N{DEGREE SIGN}C'.format(entry.current, entry.high, entry.critical)
-            n += 1
+            info[f'Core {num_of_cores} tempereture'] = 'current={0:<6f}\N{DEGREE SIGN}C, high={0:<6f}\N{DEGREE SIGN}C, critical={0:<6f}\N{DEGREE SIGN}C'.format(entry.current, entry.high, entry.critical)
+            num_of_cores += 1
 
     return info
 
-
+# Get the window list
 def get_winlist():
-    """
-    Get the window list and the active workspace.
-    """
     scr = Wnck.Screen.get_default()
     scr.force_update()
     windows = scr.get_windows()
-    active_wspace = scr.get_active_workspace()
 
-    return windows, active_wspace
+    return windows
 
-
-def main():
-
-    win_activ = {}
-    n = 0
-
-    #while True:
-    warnings.filterwarnings("ignore")
-    
-    processes = get_processes_info_reduced()
+# function with obtaining and printing(for debug) all info
+def main_iteration():
+#-------------------------------------------- Processes info --------------------------------------------#
+    processes = get_processes_info()
 
     for proc in processes:
-        # запись информации о каждом процессе в базу данных
+        # write information about every process into database
         DB_modul.WriteToDB(proc)
         print(proc)
+
+    print("{0:<30s}".format("Number of processes:"), len(processes))
+
+#--------------------------------------- System and computer info ---------------------------------------#
 
     print("######################### Integral info ##############################")
     integral_info = get_integral_info()
@@ -221,74 +110,111 @@ def main():
         print("{0:<30s}".format(info + ':'), integral_info[info])
 
 
-    print("{0:<30s}".format("Number of processes:"), len(processes))
+#--------------------------------------------- Windows info ---------------------------------------------#
 
     print("######################### Opened windows #############################")
 
-    wlist, active_wspace = get_winlist()
-    
+    wlist = get_winlist()
     for w in wlist:
-        #if w.is_visible_on_workspace(active_wspace):
         print(w.get_name())
 
-
     print("######################### Current window #############################")
+    # Create an object of Xdo and then acquire information
     xdo = Xdo()
-    
+
+    # Active window
     try:
         xdo_window_id = xdo.get_active_window()
         xdo_window_name = xdo.get_window_name(xdo_window_id).decode('UTF-8')
         print("{0:<30s}".format("Current window id:"), xdo_window_id)
         print("{0:<30s}".format("Current window name:"), xdo_window_name)
 
+
         if xdo_window_name in win_activ.keys():
-            win_activ[xdo_window_name] = int(win_activ[xdo_window_name]) + 1
+            win_activ[xdo_window_name] += 1
         else:
             win_activ[xdo_window_name] = 1
-
-        n += 1
     except:
         pass
+
+    time_activ.append((str(datetime.now().strftime("%d-%m-%Y %H:%M:%S")), xdo_window_name))
+
+    # Now get information about most used windows
 
     values = list(win_activ.values())
     values_sorted = list(sorted(win_activ.values(), reverse=True))
     keys   = list(win_activ.keys())
 
-
     try:
         window_max_used_1  = keys[values.index(values_sorted[0])]
-        max_used_percent_1 = values_sorted[0] / n * 100
+        max_used_percent_1 = values_sorted[0] / loop_times * 100
         print('{0:<30s}'.format("Maximum used window:"), window_max_used_1, '{:0.2f}%'.format(max_used_percent_1, 2))
     except:
         pass
 
     try:
-        window_max_used_2  = keys[values.index(values_sorted[1])]
-        max_used_percent_2 = values_sorted[1] / n * 100
+        k = values.index(values_sorted[1])
+        window_max_used_2  = keys[k]
+        while window_max_used_2 == window_max_used_1:
+            k += 1
+            window_max_used_2 = keys[k]
+
+        max_used_percent_2 = values_sorted[1] / loop_times * 100
         print('{0:<30s}'.format("Second maximum used window:"), window_max_used_2, '{:0.2f}%'.format(max_used_percent_2, 2))
     except:
         pass
 
     try:
-        window_max_used_3  = keys[values.index(values_sorted[2])]
-        max_used_percent_3 = values_sorted[2] / n * 100
+        k = values.index(values_sorted[2])
+        window_max_used_3  = keys[k]
+        while window_max_used_3 == window_max_used_1 or window_max_used_3 == window_max_used_2:
+            k += 1
+            window_max_used_3 = keys[k]
+
+        max_used_percent_3 = values_sorted[2] / loop_times * 100
         print('{0:<30s}'.format("Third maximum used window:"), window_max_used_3, '{:0.2f}%'.format(max_used_percent_3, 2))
     except:
         pass
 
-    mouse_loc = xdo.get_mouse_location()
-    print("{0:<30s}".format("Current mouse location:"), f"({mouse_loc.x}, {mouse_loc.y})")
-
+    # Get information about mouse location, especially which window mouse is over
     try:
-        window_at_mouse_id   = xdo.get_window_at_mouse()
-        window_at_mouse_name = xdo.get_window_name(window_at_mouse_id).decode('UTF-8')
-
-        print("{0:<30s}".format("Window at mouse id:"),   window_at_mouse_id)
-        print("{0:<30s}".format("Window at mouse name:"), window_at_mouse_name)
+        mouse_loc = xdo.get_mouse_location()
+        print("{0:<30s}".format("Current mouse location:"), f"({mouse_loc.x}, {mouse_loc.y})")
     except:
         pass
 
-        #time.sleep(5)
+    window_at_mouse_id   = xdo.get_window_at_mouse()
+    print("{0:<30s}".format("Window at mouse id:"),   window_at_mouse_id)
+    
+    if window_at_mouse_id != 0:
+        window_at_mouse_name = xdo.get_window_name(window_at_mouse_id).decode('UTF-8')
+        print("{0:<30s}".format("Window at mouse name:"), window_at_mouse_name)
+    else:
+        print("{0:<30s}".format("Window at mouse name:"), "Root window")
+
+
+
+def main():
+
+    warnings.filterwarnings("ignore")
+
+    # dictionary with {"[window name] : [activity percentage]"}
+    global win_activ    
+    win_activ = {}
+
+    # list with node as [datetime, active window]
+    global time_activ
+    time_activ = []
+
+    # number of iterations
+    global loop_times
+    loop_times = 0
+
+    # loop everything and sleep for 5 seconds
+    while True:
+        loop_times += 1
+        main_iteration()
+        time.sleep(5)
 
 if __name__ == '__main__':
     main()

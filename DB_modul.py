@@ -15,7 +15,7 @@ def CreateDict(data: tuple) -> dict:
     return dict_data
 
 def WriteToDB(data: tuple):
-    # ели базы данных не существует, ее нужно создать
+    # если базы данных не существует, ее нужно создать
     if not exists('Local_DB.s3db'):
         print("this data base already exists")
         # Создаем соединение с нашей базой данных
