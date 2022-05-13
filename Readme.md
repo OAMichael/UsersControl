@@ -4,9 +4,13 @@
 ```console
 pip install psutil
 ```
-А также 
+Это: 
 ```console
 pip install python-libxdo
+```
+И, наконец, это:
+```console
+sudo apt-get install python3-gi gir1.2-wnck-3.0
 ```
 
 #### Что скрипт должен делать:
