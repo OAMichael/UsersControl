@@ -10,6 +10,8 @@ from xdo import Xdo
 import gi
 gi.require_version('Wnck', '3.0')
 from gi.repository import Wnck
+import subprocess
+
 
 # modulus to perform database operations
 import DB_modul
@@ -176,6 +178,12 @@ def main_iteration():
     except:
         pass
 
+    if len(keys) > 2:
+        file = open("./Hist.dat", "w")
+        file.writelines([window_max_used_1 + "\n",       window_max_used_2 + "\n",       window_max_used_3 + "\n",
+                         str(max_used_percent_1) + "\n", str(max_used_percent_2) + "\n", str(max_used_percent_3) + "\n"])
+        file.close()
+
     # Get information about mouse location, especially which window mouse is over
     try:
         mouse_loc = xdo.get_mouse_location()
@@ -209,6 +217,9 @@ def main():
     # number of iterations
     global loop_times
     loop_times = 0
+
+    # Does not wait
+    TGBot = subprocess.Popen("./TGBot.py")
 
     # loop everything and sleep for 5 seconds
     while True:
