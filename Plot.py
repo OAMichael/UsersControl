@@ -9,8 +9,8 @@ import os
 
 def main():
     file = open("./Hist.dat", "r")
-    data = {"Windows":    [file.readline(), file.readline(), file.readline()],
-            "Percentage": [           float(file.readline()),            float(file.readline()),            float(file.readline())]}
+    data = {"Windows":    [      file.readline(),        file.readline(),        file.readline()],
+            "Percentage": [float(file.readline()), float(file.readline()), float(file.readline())]}
  
     file.close()
     # Now convert this dictionary type data into a pandas dataframe
