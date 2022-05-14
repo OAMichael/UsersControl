@@ -10,6 +10,8 @@ from xdo import Xdo
 import gi
 gi.require_version('Wnck', '3.0')
 from gi.repository import Wnck
+import subprocess
+
 
 # modulus to perform database operations
 import DB_modul
@@ -145,10 +147,16 @@ def main_iteration():
     values_sorted = list(sorted(win_activ.values(), reverse=True))
     keys   = list(win_activ.keys())
 
+    # Opening file
+    file = open("./Hist.dat", "w")
+
     try:
         window_max_used_1  = keys[values.index(values_sorted[0])]
         max_used_percent_1 = values_sorted[0] / loop_times * 100
         print('{0:<30s}'.format("Maximum used window:"), window_max_used_1, '{:0.2f}%'.format(max_used_percent_1, 2))
+
+        file.write(window_max_used_1  + "\n")
+        file.write(str(max_used_percent_1) + "\n")
     except:
         pass
 
@@ -161,6 +169,9 @@ def main_iteration():
 
         max_used_percent_2 = values_sorted[1] / loop_times * 100
         print('{0:<30s}'.format("Second maximum used window:"), window_max_used_2, '{:0.2f}%'.format(max_used_percent_2, 2))
+
+        file.write(window_max_used_2  + "\n")
+        file.write(str(max_used_percent_2) + "\n")
     except:
         pass
 
@@ -173,8 +184,14 @@ def main_iteration():
 
         max_used_percent_3 = values_sorted[2] / loop_times * 100
         print('{0:<30s}'.format("Third maximum used window:"), window_max_used_3, '{:0.2f}%'.format(max_used_percent_3, 2))
+
+        file.write(window_max_used_3  + "\n")
+        file.write(str(max_used_percent_3) + "\n")
     except:
         pass
+
+    # Closing file
+    file.close()
 
     # Get information about mouse location, especially which window mouse is over
     try:
@@ -209,6 +226,9 @@ def main():
     # number of iterations
     global loop_times
     loop_times = 0
+
+    # Does not wait
+    TGBot = subprocess.Popen("./TGBot.py")
 
     # loop everything and sleep for 5 seconds
     while True:
