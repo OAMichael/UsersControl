@@ -5,10 +5,11 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 import os
+from sys import argv
 
 
 def main():
-    file = open("./Hist.dat", "r")
+    file = open("./Hists/Hist" + argv[1] + ".dat", "r")
     lines = file.readlines()
 
     win_list = []
@@ -60,11 +61,10 @@ def main():
     # Setting the y-axis label and its size
     plt.ylabel("Percentage", fontsize=25)
 
-    plt.title("Most used windows",fontsize=30)
+    plt.title("Most used windows by " + argv[1],fontsize=30)
 
     # Finally plotting the graph
-    #plt.show()
-    plt.savefig("./Graphs/Windows.png")
+    plt.savefig("./Graphs/Windows" + argv[1] + ".png")
 
 if __name__ == '__main__':
     main()
