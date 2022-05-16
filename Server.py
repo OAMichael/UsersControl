@@ -133,6 +133,21 @@ def parse_message(info_string):
     return work_info
 
 
+def break_connection(server_socket):
+    for connection in connection_list:
+        if connection == server_socket or connection == sys.stdin:
+            continue
+        connection.sendall("[System]: Closing connection...".encode(ENCODE))
+        disconnect_client(connection)
+    server_socket.shutdown(socket.SHUT_RDWR)
+    server_socket.close()
+    TGBot.kill()
+    TGBot.kill()
+    print("[System]: Closing connection...")
+    sys.exit(0)
+
+
+
 def main():
     host = '192.168.0.105'
     port = 55555
@@ -176,6 +191,7 @@ def main():
     print("[System]: Socket setup has been done!")
 
     # Does not wait
+    global TGBot
     TGBot = subprocess.Popen("./TGBot.py")
     print("[System]: Telegram bot has been activated!")
 
@@ -195,6 +211,13 @@ def main():
                     # Processing new client
                     client, address = server_socket.accept()
                     nick = client.recv(BUFSIZE).decode(ENCODE)
+                    if nick in nicknames:
+                        client.sendall("[Server]: Sorry, but this nickname already exists. Try another one.".encode(ENCODE))
+                        disconnect_client(client)
+                        continue
+                    else:
+                        client.sendall("[Server]: Great nickname. Welcome aboard.".encode(ENCODE))
+
                     print(f"[System]: New connection: ({nick}, {str(address)})")
                     connection_list.append(client)
                     file = open("./Names.dat", "a")
@@ -207,11 +230,7 @@ def main():
                 elif sock == sys.stdin:
                     command = sys.stdin.readline()
                     if command in quit_list:
-                        server_socket.shutdown(socket.SHUT_RDWR)
-                        server_socket.close()
-                        TGBot.kill()
-                        print("[System]: Closing connection...")
-                        return
+                        break_connection(server_socket)
 
                 # Incoming message from a client
                 else:
@@ -243,11 +262,7 @@ def main():
                         traceback.print_exc()
                         continue
     except KeyboardInterrupt:
-        server_socket.shutdown(socket.SHUT_RDWR)
-        server_socket.close()
-        TGBot.kill()
-        TGBot.kill()
-        print("[System]: Closing connection...")
+        break_connection(server_socket)
 
 
 if __name__ == '__main__':

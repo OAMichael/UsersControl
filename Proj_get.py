@@ -261,8 +261,14 @@ def main():
     global loop_times
     loop_times = 0
 
+
     try:
         client_socket.sendall(nickname.encode(ENCODE))
+
+        message = client_socket.recv(BUFSIZE).decode(ENCODE)
+        print(message)
+        if "Sorry" in message:
+            return
     except:
         pass
 
