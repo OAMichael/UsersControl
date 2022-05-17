@@ -15,17 +15,15 @@ def main():
     win_list = []
     percent_list = []
 
-    if len(lines) > 0:
-        win_list.append( ('...' + lines[0][-32:]) if len(lines[0]) > 35 else lines[0])
-        percent_list.append(float(lines[1]))
+    try:
+        for i in range(3):
+            new_line = (lines[2*i][:16] + '...' + lines[2*i][-16:]) if len(lines[2*i]) > 35 else lines[2*i]
 
-    if len(lines) > 2:
-        win_list.append( ('...' + lines[2][-32:]) if len(lines[2]) > 35 else lines[2])
-        percent_list.append(float(lines[3]))
+            win_list.append(new_line)
+            percent_list.append(float(lines[2*i + 1]))
+    except:
+        pass
 
-    if len(lines) > 4:
-        win_list.append( ('...' + lines[4][-32:]) if len(lines[4]) > 35 else lines[4]) 
-        percent_list.append(float(lines[5]))
 
     data = {"Windows":    win_list,
             "Percentage": percent_list}

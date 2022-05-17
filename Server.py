@@ -221,7 +221,7 @@ def main():
                     print(f"[System]: New connection: ({nick}, {str(address)})")
                     connection_list.append(client)
                     file = open("./Names.dat", "a")
-                    file.write(nick)
+                    file.write(nick + "\n")
                     file.close()
                     nicknames.append(nick)
                     workers[nick] = {}
