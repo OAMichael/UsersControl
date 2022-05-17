@@ -60,4 +60,4 @@ sudo apt-get install python3-gi gir1.2-wnck-3.0
 
 #### Пример гистограммы:
 
-![Пример](./Graphs/WindowsMisha.png)
+![Пример](./Graphs/WindowsAndrey.png)
