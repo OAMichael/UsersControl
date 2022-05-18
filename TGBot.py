@@ -114,7 +114,6 @@ def ProceedKeyboard(update: Update, context: CallbackContext):
 
 
 def main():
-    List_to_filter
     try:
         updater = Updater("5341440273:AAHw6wLvQcQAINCWW9epFTDPHGK9lr38BP8", use_context=True)
         updater.dispatcher.add_handler(CommandHandler('start', start))

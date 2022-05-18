@@ -116,8 +116,6 @@ class TcpServer(object):
                                     bytes_recd = bytes_recd + len(chunk)
 
                                 #print("[Server]: done receiving! Writing... ")
-
-
                                 bytes_wrt = 0
                                 try:
                                     file.write(chunks)
