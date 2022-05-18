@@ -9,6 +9,8 @@ import traceback
 BUFSIZE = 2048
 ENCODE = 'utf-8'
 SOCKET_TIMEOUT = 2
+TCP_KEEPALIVE_TIMEOUT = 300
+
 
 class TcpClient(object):
 
@@ -30,7 +32,8 @@ class TcpClient(object):
             if (x == 0):
                 x = self.client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
                 # Overrides value (in seconds) for keepalive
-                self.client_socket.setsockopt(socket.SOL_TCP, socket.TCP_KEEPINTVL, 300)
+                self.client_socket.setsockopt(socket.SOL_TCP, socket.TCP_KEEPALIVE if sys.platform.startswith('darwin')
+                                                                                   else socket.TCP_KEEPINTVL, TCP_KEEPALIVE_TIMEOUT)
             print("* Tcp keepalive now is on")
         except:
             print("* Error processing TCP Keepalive!")
@@ -57,17 +60,16 @@ class TcpClient(object):
                     raise RuntimeError("socket connection broken")
                 totalsent = totalsent + sent 
 
-            if (totalsent == filesize):
-                print("[Client]: done sending. Waiting for confirmation...")
-
+            #if (totalsent == filesize):
+                #print("[Client]: done sending. Waiting for confirmation...")
         else:
             raise RuntimeError("File sending failed")
 
         answer = self.client_socket.recv(BUFSIZE).decode(ENCODE)
-        if (answer == "$filerecieved$"):
-            print("[Client]: confirmation received!")
-        else:
-            print("Unknown message instead of confirmation")
+        #if (answer == "$filerecieved$"):
+            #print("[Client]: confirmation received!")
+        #else:
+            #print("Unknown message instead of confirmation")
 
 
 if __name__ == "__main__":

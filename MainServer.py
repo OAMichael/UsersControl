@@ -163,7 +163,7 @@ def break_connection(server_socket):
 
 def main():
     # First of all, configurate the server
-    host = '192.168.0.105'
+    host = '172.20.10.13'
     port = 55555
 
     # AF_INET - internet socket, SOCK_STREAM - connection-based protocol for TCP, 
@@ -260,32 +260,6 @@ def main():
                     # Data received -> processing
                     try:
                         data = sock.recv(BUFSIZE)
-                        #if message:
-                            # Find out whose message came from
-                            #nick = nicknames[connection_list.index(sock)]
-                            # And parse all information
-                            #workers[nick] = parse_message(message.decode(ENCODE))
-
-                            # That's all preparing for graphing histograms of active windows
-                            #lines = [workers[nick]["Maximum used window"] + "\n", workers[nick]["Max used percent 1"] + "\n"]
-
-                            #if "Maximum used window 2" in workers[nick]:
-                                #lines.append(workers[nick]["Maximum used window 2"] + "\n")
-                                #lines.append(workers[nick]["Max used percent 2"] + "\n")
-
-                            #if "Maximum used window 3" in workers[nick]:
-                                #lines.append(workers[nick]["Maximum used window 3"] + "\n")
-                                #lines.append(workers[nick]["Max used percent 3"])
-
-                            #file = open("./Hists/Hist" + nick + ".dat", "w")
-                            #file.writelines(lines)
-                            #file.close()
-
-                            # Write information about every process into database (will implement soon)
-                            #for proc in workers[nick]["Processes"]:
-                            #    DB_modul.WriteToDB(proc)
-
-
                         if data.startswith(b'$'):
                             data = data.decode(ENCODE)
                             data = data[1:-1]
@@ -294,7 +268,6 @@ def main():
                             filelength = int(fileheader[1])
 
                             sock.sendall("$filenamereceived$".encode(ENCODE))
-                            print("[Server]: receiving...")
                             file = open('n_' +filename, 'wb')
                             chunks = b''
                             bytes_recd = 0
@@ -305,25 +278,19 @@ def main():
                                 chunks = chunks + chunk
                                 bytes_recd = bytes_recd + len(chunk)
 
-                            print("[Server]: done receiving! Writing... ")
-
-
                             bytes_wrt = 0
                             try:
                                 file.write(chunks)
                             except Exception:
                                 traceback.print_exc()
 
-                            print("[Server]: done writing!")
                             file.close()
                             sock.sendall("$filereceived$".encode(ENCODE))
-
 
                             info_string = ""
                             file = open("./n_FileToSend.dat", "r")
                             info_string = file.read()
                             file.close()
-
 
                             nick = nicknames[connection_list.index(sock)]
                             # And parse all information
@@ -343,12 +310,6 @@ def main():
                             file = open("./Hists/Hist" + nick + ".dat", "w")
                             file.writelines(lines)
                             file.close()
-
-
-
-
-
-
                     except:
                         traceback.print_exc()
                         continue

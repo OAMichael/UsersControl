@@ -30,7 +30,8 @@ class TcpServer(object):
             x = self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
             print ('* setsockopt ' + str(x))
             # Overrides value (in seconds) for keepalive
-            self.server_socket.setsockopt(socket.SOL_TCP, socket.TCP_KEEPINTVL, TCP_KEEPALIVE_TIMEOUT)
+            self.server_socket.setsockopt(socket.SOL_TCP, socket.TCP_KEEPALIVE if sys.platform.startswith('darwin')
+                                                                               else socket.TCP_KEEPINTVL, TCP_KEEPALIVE_TIMEOUT)
         else:
             print ("* Socket Keepalive already on")
 
@@ -103,7 +104,7 @@ class TcpServer(object):
                                 filelength = int(fileheader[1])
 
                                 sock.sendall("$filenamereceived$".encode(ENCODE))
-                                print("[Server]: receiving...")
+                                #print("[Server]: receiving...")
                                 file = open('n_' +filename, 'wb')
                                 chunks = b''
                                 bytes_recd = 0
@@ -114,7 +115,7 @@ class TcpServer(object):
                                     chunks = chunks + chunk
                                     bytes_recd = bytes_recd + len(chunk)
 
-                                print("[Server]: done receiving! Writing... ")
+                                #print("[Server]: done receiving! Writing... ")
 
 
                                 bytes_wrt = 0
@@ -123,7 +124,7 @@ class TcpServer(object):
                                 except Exception:
                                     traceback.print_exc()
 
-                                print("[Server]: done writing!")
+                                #print("[Server]: done writing!")
                                 file.close()
                                 sock.sendall("$filereceived$".encode(ENCODE))
                     except socket.error:
