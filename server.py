@@ -30,7 +30,8 @@ class TcpServer(object):
             x = self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
             print ('* setsockopt ' + str(x))
             # Overrides value (in seconds) for keepalive
-            self.server_socket.setsockopt(socket.SOL_TCP, socket.TCP_KEEPINTVL, TCP_KEEPALIVE_TIMEOUT)
+            self.server_socket.setsockopt(socket.SOL_TCP, socket.TCP_KEEPALIVE if sys.platform.startswith('darwin')
+                                                                               else socket.TCP_KEEPINTVL, TCP_KEEPALIVE_TIMEOUT)
         else:
             print ("* Socket Keepalive already on")
 
