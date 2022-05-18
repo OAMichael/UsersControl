@@ -13,7 +13,7 @@ import subprocess
 
 workers_list = []
 Buttons = [['Workers info', 'Help'], ['Remove keyboard'], ['List of workers']]
-List_to_filter = ['Workers info', 'Help', 'Remove keyboard', 'List of workers']
+List_to_filter = ['Workers info', 'Help', 'Remove keyboard', 'List of workers', 'Back to menu']
 
 
 def start(update: Update, context: CallbackContext):
@@ -99,9 +99,7 @@ def ProceedKeyboard(update: Update, context: CallbackContext):
         ReadNames()
 
         List_to_filter += workers_list
-        if 'Back to menu' not in List_to_filter:
-            List_to_filter.append('Back to menu')
-        
+
         Keys = [['Back to menu']]
         for name in workers_list:
             Keys.append([name])
