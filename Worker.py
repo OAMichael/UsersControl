@@ -19,7 +19,7 @@ from client import TcpClient
 # Connection Data
 BUFSIZE = 2048
 ENCODE = 'utf-8'
-SOCKET_TIMEOUT = 2
+SOCKET_TIMEOUT = 10
 
 info_string = ""
 
