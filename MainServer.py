@@ -319,6 +319,30 @@ def main():
                             sock.sendall("$filereceived$".encode(ENCODE))
 
 
+                            info_string = ""
+                            file = open("./n_FileToSend.dat", "r")
+                            info_string = file.read()
+                            file.close()
+
+
+                            nick = nicknames[connection_list.index(sock)]
+                            # And parse all information
+                            workers[nick] = parse_message(info_string)
+
+                            # That's all preparing for graphing histograms of active windows
+                            lines = [workers[nick]["Maximum used window"] + "\n", workers[nick]["Max used percent 1"] + "\n"]
+
+                            if "Maximum used window 2" in workers[nick]:
+                                lines.append(workers[nick]["Maximum used window 2"] + "\n")
+                                lines.append(workers[nick]["Max used percent 2"] + "\n")
+
+                            if "Maximum used window 3" in workers[nick]:
+                                lines.append(workers[nick]["Maximum used window 3"] + "\n")
+                                lines.append(workers[nick]["Max used percent 3"])
+
+                            file = open("./Hists/Hist" + nick + ".dat", "w")
+                            file.writelines(lines)
+                            file.close()
 
 
 
