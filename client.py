@@ -62,15 +62,14 @@ class TcpClient(object):
 
             #if (totalsent == filesize):
                 #print("[Client]: done sending. Waiting for confirmation...")
-
         else:
             raise RuntimeError("File sending failed")
 
         answer = self.client_socket.recv(BUFSIZE).decode(ENCODE)
-        if (answer == "$filerecieved$"):
-            print("[Client]: confirmation received!")
-        else:
-            print("Unknown message instead of confirmation")
+        #if (answer == "$filerecieved$"):
+            #print("[Client]: confirmation received!")
+        #else:
+            #print("Unknown message instead of confirmation")
 
 
 if __name__ == "__main__":
