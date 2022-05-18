@@ -17,7 +17,7 @@ from gi.repository import Wnck
 from client import TcpClient
 
 # Connection Data
-BUFSIZE = 32768
+BUFSIZE = 2048
 ENCODE = 'utf-8'
 SOCKET_TIMEOUT = 2
 
@@ -212,7 +212,7 @@ def main():
 
     nickname = str(input("Enter your name: "))
     # Getting connection info
-    host = '192.168.0.105'
+    host = '172.20.10.13'
     port = 55555
 
     # Connecting to server

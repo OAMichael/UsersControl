@@ -14,7 +14,7 @@ import DB_modul
 
 
 # Connection Data
-BUFSIZE = 32768
+BUFSIZE = 2048
 ENCODE = 'utf-8'
 TCP_KEEPALIVE_TIMEOUT = 300
 
