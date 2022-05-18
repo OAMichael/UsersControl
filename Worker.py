@@ -14,11 +14,14 @@ from xdo import Xdo
 import gi
 gi.require_version('Wnck', '3.0')
 from gi.repository import Wnck
+from client import TcpClient
 
 # Connection Data
 BUFSIZE = 32768
 ENCODE = 'utf-8'
 SOCKET_TIMEOUT = 2
+
+# Command which persuade server to close connection
 quit_list = ["quit\n", "Quit\n", "q\n", "exit\n", "Exit\n"]
 
 
@@ -33,7 +36,7 @@ def get_processes_info():
         # get all process info in one shot
         with process.oneshot():
 
-            # get the name of the file executed (string)
+            # get the name of the process executed
             name = process.name()
 
             # get the time the process was spawned
@@ -62,7 +65,6 @@ def get_processes_info():
 
             info_string = info_string + "{:s},{:s},{:s},{:d},{:d},{:d},{:d}\n".format(name, create_time, status,
                                                                                       rss, vms, shared, data)
-
             processes.append(name)
     
     info_string += "NEW_INFO\n"
@@ -142,7 +144,6 @@ def get_win_info():
         pass
 
     # Now get information about most used windows
-
     values = list(win_activ.values())
     values_sorted = list(sorted(win_activ.values(), reverse=True))
     keys   = list(win_activ.keys())
@@ -154,6 +155,7 @@ def get_win_info():
     except:
         pass
 
+    # If there is a second used window
     try:
         k = values.index(values_sorted[1])
         window_max_used_2  = keys[k]
@@ -166,6 +168,7 @@ def get_win_info():
     except:
         pass
 
+    # If there is a third used window
     try:
         k = values.index(values_sorted[2])
         window_max_used_3  = keys[k]
@@ -185,7 +188,7 @@ def get_win_info():
     except:
         pass
 
-    window_at_mouse_id   = xdo.get_window_at_mouse()
+    window_at_mouse_id = xdo.get_window_at_mouse()
     info_string += f"Window at mouse id::::" + str(window_at_mouse_id) + "\n"
     
     if window_at_mouse_id != 0:
@@ -217,34 +220,38 @@ def main():
     # AF_INET - internet socket, SOCK_STREAM - connection-based protocol for TCP, 
     # IPPROTO_TCP - choosing TCP
     # 5-second timeout to detect errors
-    try:
-        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-        client_socket.settimeout(SOCKET_TIMEOUT)
-    except:
-        print("Error creating socket!")
-        traceback.print_exc()
-        sys.exit(1)
+    #try:
+    #    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+    #    client_socket.settimeout(SOCKET_TIMEOUT)
+    #except:
+    #    print("Error creating socket!")
+    #    traceback.print_exc()
+    #    sys.exit(1)
 
     # Check and turn on TCP Keepalive
-    try:
-        x = client_socket.getsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE)
-        if (x == 0):
-            x = client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-            # Overrides value (in seconds) for keepalive
-            client_socket.setsockopt(socket.SOL_TCP, socket.TCP_KEEPINTVL, 300)
-    except:
-        print("Error processing TCP Keepalive!")
-        traceback.print_exc()
-        sys.exit(1)   
+    #try:
+    #    x = client_socket.getsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE)
+    #    if (x == 0):
+    #        x = client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+    #        # Overrides value (in seconds) for keepalive
+    #        client_socket.setsockopt(socket.SOL_TCP, socket.TCP_KEEPINTVL, 300)
+    #except:
+    #    print("Error processing TCP Keepalive!")
+    #    traceback.print_exc()
+    #    sys.exit(1)   
 
     # Connect to host
-    try: 
-        client_socket.connect((host, port))
-    except Exception as e:
-        if e.errno != 36:
-            print ("Socket connect failed!")
-            traceback.print_exc()
-            sys.exit(1)
+    #try: 
+    #    client_socket.connect((host, port))
+    #except Exception as e:
+    #    if e.errno != 36:
+    #        print ("Socket connect failed!")
+    #        traceback.print_exc()
+    #        sys.exit(1)
+
+
+    worker = TcpClient(host, port)
+
 
     warnings.filterwarnings("ignore")
     global info_string
@@ -261,14 +268,9 @@ def main():
     global loop_times
     loop_times = 0
 
-
+    # Send to server nickname of THIS computer's worker
     try:
-        client_socket.sendall(nickname.encode(ENCODE))
-
-        message = client_socket.recv(BUFSIZE).decode(ENCODE)
-        print(message)
-        if "Sorry" in message:
-            return
+        worker.sendmsg(nickname)
     except:
         pass
 
@@ -277,18 +279,28 @@ def main():
         while True:
             loop_times += 1
             main_iteration()
-            client_socket.sendall(info_string.encode(ENCODE))
+            #client_socket.sendall(info_string.encode(ENCODE))
+            file = open("./FileToSend.dat", "w")
+            file.write(info_string)
+            file.close()
+            file = open("./FileToSend.dat", "rb")
+            worker.sendfile("./FileToSend.dat", file)
+            file.close()
             info_string = ""
-            if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
-                command = sys.stdin.readline()
-                if command in quit_list:
-                    print("[System]: Closing connection...")
-                    break
+            
+            #if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
+            #    command = sys.stdin.readline()
+            #    # If we type quit command
+            #    if command in quit_list:
+            #        print("[System]: Closing connection...")
+            #        break
             time.sleep(5)
 
     except KeyboardInterrupt:
-        client_socket.shutdown(socket.SHUT_RDWR)
-        client_socket.close()
+        # Cleaning everything in case of keyboard interruption
+        #client_socket.shutdown(socket.SHUT_RDWR)
+        #client_socket.close()
+        pass
 
 if __name__ == '__main__':
     main()

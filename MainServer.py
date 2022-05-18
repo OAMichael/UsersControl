@@ -7,6 +7,7 @@ import sys
 import subprocess
 import time
 from collections import deque
+from server import TcpServer
 
 # module to perform database operations
 import DB_modul
@@ -16,18 +17,18 @@ import DB_modul
 BUFSIZE = 32768
 ENCODE = 'utf-8'
 TCP_KEEPALIVE_TIMEOUT = 300
-QUEUELEN = 10
-
 
 # Lists for program work
-
 connection_list = []
 nicknames = []
 addresses = []
 workers = {}
+
+# Command which persuade server to close connection
 quit_list = ["quit\n", "Quit\n", "q\n", "exit\n", "Exit\n"]
 
 
+# Function to disconnect particular user
 def disconnect_client(user):
     if user in connection_list:
         index = connection_list.index(user)
@@ -45,18 +46,20 @@ def disconnect_client(user):
         print("[System]: Trying to disconnect unknown worker")
 
 
-
+# Function which parses newly brought message into separate lines and info
 def parse_message(info_string):
-    
+    # There are three main blocks: processes, system and windows
     message_list_proc, message_list_integral, message_list_windows = info_string.split("\nNEW_INFO\n")
     message_list_proc     = message_list_proc.split("\n")
     message_list_integral = message_list_integral.split("\n")
     message_list_windows  = message_list_windows.split("\n")
     processes = []
 
+    # Parse for processes
     for line in message_list_proc:
         processes.append(tuple(line.split(",")))
 
+    # Parse for system info
     integral_info = { 'Number of processes': message_list_integral[0], 
                       'Disk memory usage':  message_list_integral[1], 
                       'CPU frequency(min)': message_list_integral[2],
@@ -65,13 +68,17 @@ def parse_message(info_string):
                       'Boot time': message_list_integral[5], 
                       'Total memory used': message_list_integral[6]  }
 
+    # Case of additional info about cores' temperature
     if len(message_list_integral) > 7:
         for n in range(7, len(message_list_integral)):
             integral_info[f'Core {n - 7} temperature'] = message_list_integral[n]
 
+    # Now get information about windows
     opened_windows = []
     max_used_percent_2 = 0
     max_used_percent_3 = 0
+
+    # Very primitive, but it works
     for line in message_list_windows:
         if 'Current window id::::' in line:
             current_window_id = line.split('::::')[1]
@@ -108,9 +115,12 @@ def parse_message(info_string):
             window_at_mouse_name = line.split('::::')[1]
             continue
 
+        # All named info is described above. Only unnamed information is about 
+        # opened windows, so code goes there only if everything else is read
         if line:
             opened_windows.append(line)
 
+    # Now assemble everything into one dictionary which will be a value-node for a main dict
     work_info = { "Processes"             : processes, 
                   "Integral info"         : integral_info, 
                   "Opened windows"        : opened_windows,
@@ -122,6 +132,7 @@ def parse_message(info_string):
                   "Window at mouse id"    : window_at_mouse_id,
                   "window_at_mouse_name"  : window_at_mouse_name}
 
+    # If there any
     if max_used_percent_2:
         work_info["Maximum used window 2"] = window_max_used_2
         work_info["Max used percent 2"]    = max_used_percent_2
@@ -133,15 +144,17 @@ def parse_message(info_string):
     return work_info
 
 
+# Function which server connection
 def break_connection(server_socket):
     for connection in connection_list:
+        # First, we disconnect everyone else
         if connection == server_socket or connection == sys.stdin:
             continue
         connection.sendall("[System]: Closing connection...".encode(ENCODE))
         disconnect_client(connection)
+    # And then shut down the server and killing the bot
     server_socket.shutdown(socket.SHUT_RDWR)
     server_socket.close()
-    TGBot.kill()
     TGBot.kill()
     print("[System]: Closing connection...")
     sys.exit(0)
@@ -149,6 +162,7 @@ def break_connection(server_socket):
 
 
 def main():
+    # First of all, configurate the server
     host = '192.168.0.105'
     port = 55555
 
@@ -184,21 +198,24 @@ def main():
     nicknames.append("Server")
     addresses.append( (host, port) )
 
+    # We will need stdin, so also add it 
     connection_list.append(sys.stdin)
     nicknames.append("STDIN")
     addresses.append(0)
 
     print("[System]: Socket setup has been done!")
 
-    # Does not wait
+    # Does not wait, but we don't need to, because kill it while closing connection
     global TGBot
     TGBot = subprocess.Popen("./TGBot.py")
     print("[System]: Telegram bot has been activated!")
 
+    # Prepare a file for all workers names (for the beta version)
     file = open("./Names.dat", "w")
     file.write("")
     file.close()
 
+    # Main loop
     try:
         while True:
             # Get the list of sockets that are ready to be read
@@ -210,15 +227,19 @@ def main():
                 if sock == server_socket:
                     # Processing new client
                     client, address = server_socket.accept()
+                    # Obtain a nickname of a new worker
                     nick = client.recv(BUFSIZE).decode(ENCODE)
+                    # If there is already such name, decline the worker connection
                     if nick in nicknames:
-                        client.sendall("[Server]: Sorry, but this nickname already exists. Try another one.".encode(ENCODE))
+                        #client.sendall("[Server]: Sorry, but this nickname already exists. Try another one.".encode(ENCODE))
                         disconnect_client(client)
                         continue
-                    else:
-                        client.sendall("[Server]: Great nickname. Welcome aboard.".encode(ENCODE))
-
+                    #else:
+                        # And if there isn't, accept new user
+                        #client.sendall("[Server]: Great nickname. Welcome aboard.".encode(ENCODE))
+                    # Show message about new connection on server
                     print(f"[System]: New connection: ({nick}, {str(address)})")
+                    # Adding new worker to list of connections, names, and main dictionary
                     connection_list.append(client)
                     file = open("./Names.dat", "a")
                     file.write(nick + "\n")
@@ -227,8 +248,10 @@ def main():
                     workers[nick] = {}
                     addresses.append(address)
 
+                # But if we got a data from stdin, it's likely to be message to break connection
                 elif sock == sys.stdin:
                     command = sys.stdin.readline()
+                    # But also it may just a mistake
                     if command in quit_list:
                         break_connection(server_socket)
 
@@ -236,32 +259,77 @@ def main():
                 else:
                     # Data received -> processing
                     try:
-                        message = sock.recv(BUFSIZE)
-                        if message:
-                            nick = nicknames[connection_list.index(sock)]
-                            workers[nick] = parse_message(message.decode(ENCODE))
+                        data = sock.recv(BUFSIZE)
+                        #if message:
+                            # Find out whose message came from
+                            #nick = nicknames[connection_list.index(sock)]
+                            # And parse all information
+                            #workers[nick] = parse_message(message.decode(ENCODE))
 
-                            lines = [workers[nick]["Maximum used window"] + "\n", workers[nick]["Max used percent 1"] + "\n"]
+                            # That's all preparing for graphing histograms of active windows
+                            #lines = [workers[nick]["Maximum used window"] + "\n", workers[nick]["Max used percent 1"] + "\n"]
 
-                            if "Maximum used window 2" in workers[nick]:
-                                lines.append(workers[nick]["Maximum used window 2"] + "\n")
-                                lines.append(workers[nick]["Max used percent 2"] + "\n")
+                            #if "Maximum used window 2" in workers[nick]:
+                                #lines.append(workers[nick]["Maximum used window 2"] + "\n")
+                                #lines.append(workers[nick]["Max used percent 2"] + "\n")
 
-                            if "Maximum used window 3" in workers[nick]:
-                                lines.append(workers[nick]["Maximum used window 3"] + "\n")
-                                lines.append(workers[nick]["Max used percent 3"])
+                            #if "Maximum used window 3" in workers[nick]:
+                                #lines.append(workers[nick]["Maximum used window 3"] + "\n")
+                                #lines.append(workers[nick]["Max used percent 3"])
 
-                            file = open("./Hists/Hist" + nick + ".dat", "w")
-                            file.writelines(lines)
-                            file.close()
+                            #file = open("./Hists/Hist" + nick + ".dat", "w")
+                            #file.writelines(lines)
+                            #file.close()
 
-                            ## write information about every process into database
+                            # Write information about every process into database (will implement soon)
                             #for proc in workers[nick]["Processes"]:
                             #    DB_modul.WriteToDB(proc)
+
+
+                        if data.startswith(b'$'):
+                            data = data.decode(ENCODE)
+                            data = data[1:-1]
+                            fileheader = data.split("_")
+                            filename = fileheader[0]
+                            filelength = int(fileheader[1])
+
+                            sock.sendall("$filenamereceived$".encode(ENCODE))
+                            print("[Server]: receiving...")
+                            file = open('n_' +filename, 'wb')
+                            chunks = b''
+                            bytes_recd = 0
+                            while bytes_recd < filelength:
+                                chunk = sock.recv(min(filelength - bytes_recd, BUFSIZE))
+                                if chunk == b'':
+                                    raise RuntimeError("socket connection broken")
+                                chunks = chunks + chunk
+                                bytes_recd = bytes_recd + len(chunk)
+
+                            print("[Server]: done receiving! Writing... ")
+
+
+                            bytes_wrt = 0
+                            try:
+                                file.write(chunks)
+                            except Exception:
+                                traceback.print_exc()
+
+                            print("[Server]: done writing!")
+                            file.close()
+                            sock.sendall("$filereceived$".encode(ENCODE))
+
+
+
+
+
+
+
+
                     except:
                         traceback.print_exc()
                         continue
     except KeyboardInterrupt:
+        # Cleaning everything in case of keyboard interruption
         break_connection(server_socket)
 
 

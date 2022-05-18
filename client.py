@@ -30,12 +30,18 @@ class TcpClient(object):
             if (x == 0):
                 x = self.client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
                 # Overrides value (in seconds) for keepalive
-                self.client_socket.setsockopt(socket.SOL_TCP, socket.TCP_KEEPALIVE, 300)
+                self.client_socket.setsockopt(socket.SOL_TCP, socket.TCP_KEEPINTVL, 300)
             print("* Tcp keepalive now is on")
         except:
             print("* Error processing TCP Keepalive!")
             traceback.print_exc()
             sys.exit(1)  
+
+    def sendmsg(self, msg):
+        try:
+            self.client_socket.sendall(msg.encode(ENCODE))
+        except Exception as exc:
+            raise exc
 
     def sendfile(self, filepath, file):
         filesize = os.path.getsize(filepath)
@@ -46,7 +52,6 @@ class TcpClient(object):
             data = file.read()
             totalsent = 0
             while totalsent < filesize:
-                #sent = self.client_socket.send(data[totalsent:].encode(ENCODE))
                 sent = self.client_socket.send(data[totalsent:])
                 if sent == 0:
                     raise RuntimeError("socket connection broken")
@@ -62,7 +67,7 @@ class TcpClient(object):
         if (answer == "$filerecieved$"):
             print("[Client]: confirmation received!")
         else:
-            raise RuntimeError("Unknown message instead of confirmation")
+            print("Unknown message instead of confirmation")
 
 
 if __name__ == "__main__":

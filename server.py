@@ -30,7 +30,7 @@ class TcpServer(object):
             x = self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
             print ('* setsockopt ' + str(x))
             # Overrides value (in seconds) for keepalive
-            self.server_socket.setsockopt(socket.SOL_TCP, socket.TCP_KEEPALIVE, TCP_KEEPALIVE_TIMEOUT)
+            self.server_socket.setsockopt(socket.SOL_TCP, socket.TCP_KEEPINTVL, TCP_KEEPALIVE_TIMEOUT)
         else:
             print ("* Socket Keepalive already on")
 
@@ -125,7 +125,7 @@ class TcpServer(object):
 
                                 print("[Server]: done writing!")
                                 file.close()
-                                sock.sendall("$filerecieved$".encode(ENCODE))
+                                sock.sendall("$filereceived$".encode(ENCODE))
                     except socket.error:
                         # Remove sock
                         del self.clientdict[sock]

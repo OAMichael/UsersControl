@@ -9,12 +9,15 @@ from sys import argv
 
 
 def main():
+    # Get information about what we are going to graph
     file = open("./Hists/Hist" + argv[1] + ".dat", "r")
     lines = file.readlines()
 
+    # Lists of active windows and their percentage
     win_list = []
     percent_list = []
 
+    # Filling them. Truncate name of windows in front and back if it's too long
     try:
         for i in range(3):
             new_line = (lines[2*i][:16] + '...' + lines[2*i][-16:]) if len(lines[2*i]) > 35 else lines[2*i]
@@ -23,11 +26,11 @@ def main():
             percent_list.append(float(lines[2*i + 1]))
     except:
         pass
+    file.close()
 
-
+    # Preparing for dataframe
     data = {"Windows":    win_list,
             "Percentage": percent_list}
-    file.close()
 
     # Now convert this dictionary type data into a pandas dataframe
     # specifying what are the column names
