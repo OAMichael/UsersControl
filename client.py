@@ -57,8 +57,8 @@ class TcpClient(object):
                     raise RuntimeError("socket connection broken")
                 totalsent = totalsent + sent 
 
-            if (totalsent == filesize):
-                print("[Client]: done sending. Waiting for confirmation...")
+            #if (totalsent == filesize):
+                #print("[Client]: done sending. Waiting for confirmation...")
 
         else:
             raise RuntimeError("File sending failed")

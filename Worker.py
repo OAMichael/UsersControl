@@ -17,13 +17,9 @@ from gi.repository import Wnck
 from client import TcpClient
 
 # Connection Data
-BUFSIZE = 32768
+BUFSIZE = 2048
 ENCODE = 'utf-8'
 SOCKET_TIMEOUT = 2
-
-# Command which persuade server to close connection
-quit_list = ["quit\n", "Quit\n", "q\n", "exit\n", "Exit\n"]
-
 
 info_string = ""
 
@@ -212,46 +208,11 @@ def main():
 
     nickname = str(input("Enter your name: "))
     # Getting connection info
-    host = '192.168.0.105'
+    host = '172.20.10.13'
     port = 55555
 
     # Connecting to server
-
-    # AF_INET - internet socket, SOCK_STREAM - connection-based protocol for TCP, 
-    # IPPROTO_TCP - choosing TCP
-    # 5-second timeout to detect errors
-    #try:
-    #    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-    #    client_socket.settimeout(SOCKET_TIMEOUT)
-    #except:
-    #    print("Error creating socket!")
-    #    traceback.print_exc()
-    #    sys.exit(1)
-
-    # Check and turn on TCP Keepalive
-    #try:
-    #    x = client_socket.getsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE)
-    #    if (x == 0):
-    #        x = client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-    #        # Overrides value (in seconds) for keepalive
-    #        client_socket.setsockopt(socket.SOL_TCP, socket.TCP_KEEPINTVL, 300)
-    #except:
-    #    print("Error processing TCP Keepalive!")
-    #    traceback.print_exc()
-    #    sys.exit(1)   
-
-    # Connect to host
-    #try: 
-    #    client_socket.connect((host, port))
-    #except Exception as e:
-    #    if e.errno != 36:
-    #        print ("Socket connect failed!")
-    #        traceback.print_exc()
-    #        sys.exit(1)
-
-
     worker = TcpClient(host, port)
-
 
     warnings.filterwarnings("ignore")
     global info_string
@@ -269,17 +230,13 @@ def main():
     loop_times = 0
 
     # Send to server nickname of THIS computer's worker
-    try:
-        worker.sendmsg(nickname)
-    except:
-        pass
+    worker.sendmsg(nickname)
 
     try:
         # loop everything and sleep for 5 seconds
         while True:
             loop_times += 1
             main_iteration()
-            #client_socket.sendall(info_string.encode(ENCODE))
             file = open("./FileToSend.dat", "w")
             file.write(info_string)
             file.close()
@@ -287,19 +244,9 @@ def main():
             worker.sendfile("./FileToSend.dat", file)
             file.close()
             info_string = ""
-            
-            #if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
-            #    command = sys.stdin.readline()
-            #    # If we type quit command
-            #    if command in quit_list:
-            #        print("[System]: Closing connection...")
-            #        break
             time.sleep(5)
 
     except KeyboardInterrupt:
-        # Cleaning everything in case of keyboard interruption
-        #client_socket.shutdown(socket.SHUT_RDWR)
-        #client_socket.close()
         pass
 
 if __name__ == '__main__':

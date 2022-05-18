@@ -103,7 +103,7 @@ class TcpServer(object):
                                 filelength = int(fileheader[1])
 
                                 sock.sendall("$filenamereceived$".encode(ENCODE))
-                                print("[Server]: receiving...")
+                                #print("[Server]: receiving...")
                                 file = open('n_' +filename, 'wb')
                                 chunks = b''
                                 bytes_recd = 0
@@ -114,7 +114,7 @@ class TcpServer(object):
                                     chunks = chunks + chunk
                                     bytes_recd = bytes_recd + len(chunk)
 
-                                print("[Server]: done receiving! Writing... ")
+                                #print("[Server]: done receiving! Writing... ")
 
 
                                 bytes_wrt = 0
@@ -123,7 +123,7 @@ class TcpServer(object):
                                 except Exception:
                                     traceback.print_exc()
 
-                                print("[Server]: done writing!")
+                                #print("[Server]: done writing!")
                                 file.close()
                                 sock.sendall("$filereceived$".encode(ENCODE))
                     except socket.error:
