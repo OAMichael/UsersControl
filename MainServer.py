@@ -9,10 +9,6 @@ import time
 from collections import deque
 from server import TcpServer
 
-# module to perform database operations
-import DB_modul
-
-
 # Connection Data
 BUFSIZE = 2048
 ENCODE = 'utf-8'
