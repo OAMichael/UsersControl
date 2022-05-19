@@ -24,8 +24,8 @@ class Computer(Base):
     Boot_time = Column(String)
     Total_mem_used = Column(Float)
 
-    date = Column(DateTime)
-    time = Column(Time)
+    date = Column(String)
+    # time = Column(Time)
 
     def __init__(self, number: int):
         self.number = number
@@ -44,4 +44,4 @@ class Computer(Base):
                     [CPU FREUENCY (CURRENT): {self.CPU_f_cur}]\n \
                     [BOOT TIME: {self.Boot_time}]\n \
                     [TOTAL MEMORY USED: {self.Total_mem_used}]\n \
-                    [DATE: ({self.date}) {self.time}]'
+                    [DATE: ({self.date})]'

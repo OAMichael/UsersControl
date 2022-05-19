@@ -8,7 +8,7 @@ if __name__ == '__main__':
     
     db_existed = os.path.exists(DATABASE_NAME)
     if not db_existed:
-        db_creator.create_database(False)
+        db_creator.create_database()
 
 # посмотреть табличку в приложении
 #* sqlitebrowser test.s3db
