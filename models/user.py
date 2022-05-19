@@ -16,3 +16,4 @@ class User(Base):
 
     def __repr__(self) -> str:
         info = f'USER: [NAME: {self.name}] [COMPUTER: {self.computer}]'
+        return info

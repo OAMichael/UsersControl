@@ -70,8 +70,7 @@ def _load_fake_data(session: Session):
         comp.Boot_time = "01-01-01"
         comp.Total_mem_used = 1.1
 
-        now = datetime.datetime.now()
-        comp.date = str(now.strftime("%d-%m-%Y %H:%M"))
+        comp.date = datetime.datetime.now()
 
     for _ in range(1, 8+1):
         name = fk.name()

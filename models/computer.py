@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, Time
+from sqlalchemy import Column, Integer, String, Float, DateTime
 from sqlalchemy.orm import relationship
 from models.Database import Base
 
@@ -24,8 +24,7 @@ class Computer(Base):
     Boot_time = Column(String)
     Total_mem_used = Column(Float)
 
-    date = Column(String)
-    # time = Column(Time)
+    date = Column(DateTime)
 
     def __init__(self, number: int):
         self.number = number
@@ -44,4 +43,5 @@ class Computer(Base):
                     [CPU FREUENCY (CURRENT): {self.CPU_f_cur}]\n \
                     [BOOT TIME: {self.Boot_time}]\n \
                     [TOTAL MEMORY USED: {self.Total_mem_used}]\n \
-                    [DATE: ({self.date})]'
+                    [DATE: {self.date.strftime("%d-%m-%Y %H-%M")}]'
+        return info
