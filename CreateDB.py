@@ -1,9 +1,9 @@
 from faker import Faker
-from models import student
 from models.Database import CreateDB, Session
 
-from models.User import User
-from models.Computer import Computer
+from models.applications import Application
+from models.user import User
+from models.computer import Computer
 
 # вызываем функцию создания базы данных с опцией автоматического заполнения
 def create_database(load_fake_data: bool = True):

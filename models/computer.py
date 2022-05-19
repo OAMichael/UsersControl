@@ -5,7 +5,8 @@ from models.Database import Base
 class Computer(Base):
     __tablename__ = 'computers'
 
-    id = Column(Integer)
+    id = Column(Integer, primary_key=True)
+    number = Column(Integer)
     user = relationship('User')
 
     first_window = Column(String)
@@ -26,12 +27,13 @@ class Computer(Base):
     date = Column(DateTime)
     time = Column(Time)
 
-    def __init__(self, id: int):
-        self.id = id
+    def __init__(self, number: int):
+        self.number = number
     
     def __repr__(self) -> str:
         info = f'COMPUTER\n \
                     [ID: {self.id}]\n \
+                    [NUMBER: {self.number}]\n \
                     [FIRST WINDOW: {self.first_window} ({self.first_window_percent} %)]\n \
                     [SECOND WINDOW: {self.second_window} ({self.second_window_percent} %)]\n \
                     [THIRD WINDOW: {self.third_window} ({self.third_window_percent} %)]\n\n \

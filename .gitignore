@@ -1,4 +1,4 @@
 *.log
 *.s3db
-__pycache_
+__pycache__
 *.dat

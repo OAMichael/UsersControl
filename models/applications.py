@@ -5,7 +5,7 @@ from models.Database import Base
 # вспомогательная таблица, которая используется для определения связей "Многие ко многим"
 assotiated_table = Table('assotioation', Base.metadata,
                                          Column('application_id', Integer, ForeignKey('applications.id')),
-                                         Column('computer_id', Integer, ForeignKey('computers.id'))
+                                         Column('computer_id', Integer, ForeignKey('computers.number'))
                                          )
 
 class Application(Base):
