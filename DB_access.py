@@ -5,13 +5,6 @@ from models.applications import Application, assotiated_table
 from models.user import User
 from models.computer import Computer
 
-# def Date(date) -> list:
-#     a = date.strftime("%Y %m %d %H %M %S").split()
-#     result = [int(item) for item in a]
-
-#     return result
-
-
 # дает полную информацию о компьютере по имени пользователя
 def PrintComputerInfo(session: Session, name: str):
     for it in session.query(Computer).join(User).filter(User.name == name):
@@ -32,6 +25,7 @@ def AddUser(session: Session, name: str, comp: int):
     session.commit()
     session.close()
 
+# возвращает текущий список пользователей
 def TakeUsesr(session: Session):
     users = session.query(User)
     users_names = [user.name for user in users]
@@ -105,6 +99,7 @@ def AddApplication(session: Session, app: str):
     else:
         print('this application is already in database')
 
+# проводит ассоциацию между списком приложений и компьютерами, которые когда-либо его использвали
 def Assosiation(app: Application, comp: Computer):
     if (comp.first_window == app.app_name or 
         comp.second_window == app.app_name or 
