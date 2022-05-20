@@ -2,3 +2,4 @@
 *.s3db
 __pycache__
 *.dat
+worker_base.sqlite
