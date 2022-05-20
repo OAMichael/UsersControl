@@ -21,3 +21,7 @@ class Application(Base):
 
     def __repr__(self) -> str:
         return f'Application [ID: {self.id}, Name: {self.app_name}]'
+    
+    def __eq__(self, other_app):
+        if isinstance(other_app, Application):
+            return self.app_name == other_app.app_name
