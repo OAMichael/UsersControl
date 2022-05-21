@@ -22,12 +22,12 @@ def AddUser(session: Session, name: str, comp: int):
     exists_users = session.query(User)
     if new_user in exists_users:
         print("This user already exists")
-        return
+        raise RuntimeError
     
     exists_computer = session.query(Computer)
     if new_comuter in exists_computer:
         print("This computer already exists")
-        return
+        raise RuntimeError
     
 
     session.add(new_user)
@@ -67,7 +67,7 @@ def AddComputerInfo(session: Session, comp: int, info: tuple):
     computer_number_list = [computer.number for computer in session.query(Computer)]
     if comp not in computer_number_list:
         print("You try to add computer without user. This is not you really want)")
-        return
+        raise RuntimeError
 
     computer = Computer(comp)
     computer.first_window = info[0]
@@ -124,6 +124,9 @@ def Assosiation(app: Application, comp: Computer):
     else:
         return None
 
+'''
+выводит время авторизации каждого пользователя
+'''
 def AuthorisationTime(session: Session):
     users = TakeUsesr(session)
 
@@ -131,3 +134,16 @@ def AuthorisationTime(session: Session):
         first_post = session.query(Computer).join(User).filter(User.name == user).first()
         authorisation_time = first_post.date.strftime("%d-%m-%Y %H:%M:%S")
         print("USER: " + user + " -- AUTHORASION TIME: " + authorisation_time)
+
+'''
+выводит время последней активности каждого пользователя
+'''
+def ExitTime(session: Session):
+    users = TakeUsesr(session)
+
+    for user in users:
+        computer_date = [computer.date 
+                         for computer in 
+                         session.query(Computer).join(User).filter(User.name == user)]
+        exit_time = computer_date[-1].strftime("%d-%m-%Y %H:%M:%S")
+        print("USER: " + user + " -- EXIT TIME: " + exit_time)
