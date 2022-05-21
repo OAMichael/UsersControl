@@ -21,12 +21,9 @@ BUFSIZE = 2048
 ENCODE = 'utf-8'
 SOCKET_TIMEOUT = 5
 
-info_string = ""
-
-
 # ----------------------------------------------- Info about processes -----------------------------------------------
 def get_processes_info():
-    global info_string
+    info_string = ""
     processes = []
     for process in psutil.process_iter():
         # get all process info in one shot
@@ -66,10 +63,14 @@ def get_processes_info():
     info_string += "NEW_INFO\n"
     info_string += str(len(processes)) + "\n"
 
+    file = open("./FileToSend.dat", "w")
+    file.write(info_string)
+    file.close()
+
 
 # ------------------------------------------- Info about system as a whole -------------------------------------------
 def get_integral_info():
-    global info_string
+    info_string = ""
     # get CPU frequency
     cpu_freq = psutil.cpu_freq()
 
@@ -99,8 +100,9 @@ def get_integral_info():
             info[inf] = 0
         info_string += str(info[inf]) + "\n"
 
-    return info
-
+    file = open("./FileToSend.dat", "a")
+    file.write(info_string)
+    file.close()
 
 # ----------------------------------------------- Get list of windows ------------------------------------------------
 def get_winlist():
@@ -113,8 +115,7 @@ def get_winlist():
 
 # ------------------------------------------------ Info about windows ------------------------------------------------
 def get_win_info():
-    global info_string
-    info_string += "NEW_INFO\n"
+    info_string = "NEW_INFO\n"
 
     wlist = get_winlist()
     for w in wlist:
@@ -193,6 +194,10 @@ def get_win_info():
     else:
         info_string += f"Window at mouse name::::" + "Root window" + "\n"
 
+    file = open("./FileToSend.dat", "a")
+    file.write(info_string)
+    file.close()
+
 
 # function with obtaining all info
 def main_iteration():
@@ -215,7 +220,6 @@ def main():
     worker = TcpClient(host, port)
 
     warnings.filterwarnings("ignore")
-    global info_string
 
     # dictionary with {"[window name] : [activity percentage]"}
     global win_activ    
@@ -237,13 +241,9 @@ def main():
         while True:
             loop_times += 1
             main_iteration()
-            file = open("./FileToSend.dat", "w")
-            file.write(info_string)
-            file.close()
             file = open("./FileToSend.dat", "rb")
             worker.sendfile("./FileToSend.dat", file)
             file.close()
-            info_string = ""
             time.sleep(5)
 
     except KeyboardInterrupt:

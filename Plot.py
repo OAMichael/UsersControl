@@ -6,6 +6,8 @@ import seaborn as sns
 import numpy as np
 import os
 from sys import argv
+import CreateDB
+import DB_access
 
 
 def main():
@@ -27,6 +29,11 @@ def main():
     except:
         pass
     file.close()
+
+    for win in win_list:
+        if percent_list[win_list.index(win)] == 0:
+            del percent_list[win_list.index(win)]
+            del win_list[win_list.index(win)]
 
     # Preparing for dataframe
     data = {"Windows":    win_list,
@@ -62,7 +69,7 @@ def main():
     # Setting the y-axis label and its size
     plt.ylabel("Percentage", fontsize=25)
 
-    plt.title("Most used windows by " + argv[1],fontsize=30)
+    plt.title("Most used windows by " + argv[1], fontsize=30, x=0.5, y=1.05)
 
     # Finally plotting the graph
     plt.savefig("./Graphs/Windows" + argv[1] + ".png")

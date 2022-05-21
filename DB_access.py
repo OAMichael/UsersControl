@@ -36,7 +36,7 @@ def AddUser(session: Session, name: str, comp: int):
     session.close()
 
 # возвращает текущий список пользователей
-def TakeUsesr(session: Session):
+def TakeUsers(session: Session):
     users = session.query(User)
     users_names = [user.name for user in users]
     return users_names

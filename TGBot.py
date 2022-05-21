@@ -41,10 +41,7 @@ def button(update: Update, context: CallbackContext):
 
 def ReadNames():
     global workers_list
-    file = open("./Names.dat", "r")
-    workers_list = file.read().split("\n")
-    file.close()
-    del workers_list[-1]
+    workers_list = DB_access.TakeUsers(DB_access.Session())
 
 
 def worker_info(worker, update: Update, context: CallbackContext):

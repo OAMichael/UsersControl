@@ -9,6 +9,9 @@ import time
 from datetime import datetime
 from collections import deque
 from server import TcpServer
+import os
+from models.Database import DATABASE_NAME
+from models.Database import Session
 import CreateDB
 import DB_access
 
@@ -42,6 +45,7 @@ def disconnect_client(user):
                 pass
             else:
                 traceback.print_exc()
+    else:
         print("[System]: Trying to disconnect unknown worker")
 
 
@@ -154,10 +158,8 @@ def break_connection(server_socket):
     # And then shut down the server and killing the bot
     server_socket.shutdown(socket.SHUT_RDWR)
     server_socket.close()
-    TGBot.kill()
     print("[System]: Closing connection...")
     sys.exit(0)
-
 
 
 def main():
@@ -199,22 +201,20 @@ def main():
 
     # We will need stdin, so also add it 
     connection_list.append(sys.stdin)
-    nicknames.append("STDIN")
+    nicknames.append("__stdin")
     addresses.append(0)
 
     print("[System]: Socket setup has been done!")
 
-    CreateDB.create_database(False)
+    db_existed = os.path.exists(DATABASE_NAME)
+    if not db_existed:
+        CreateDB.create_database(False)
 
     # Does not wait, but we don't need to, because kill it while closing connection
-    #global TGBot
-    #TGBot = subprocess.Popen("./TGBot.py")
-    #print("[System]: Telegram bot has been activated!")
-
-    # Prepare a file for all workers names (for the beta version)
-    #file = open("./Names.dat", "w")
-    #file.write("")
-    #file.close()
+    if len(sys.argv) > 1 and sys.argv[1] == '-TGbot':
+        global TGBot
+        TGBot = subprocess.Popen("./TGBot.py")
+        print("[System]: Telegram bot has been activated!")
 
     # Main loop
     try:
@@ -242,9 +242,6 @@ def main():
                     print(f"[System]: New connection: ({nick}, {str(address)})")
                     # Adding new worker to list of connections, names, and main dictionary
                     connection_list.append(client)
-                    #file = open("./Names.dat", "a")
-                    #file.write(nick + "\n")
-                    #file.close()
                     nicknames.append(nick)
                     workers[nick] = {}
                     addresses.append(address)
@@ -315,7 +312,6 @@ def main():
 
                             DB_access.AddComputerInfo(DB_access.Session(), nicknames.index(nick) - 1, node)
 
-
                             # That's all preparing for graphing histograms of active windows
                             #lines = [workers[nick]["Maximum used window"] + "\n", workers[nick]["Max used percent 1"] + "\n"]
 
@@ -336,7 +332,8 @@ def main():
     except KeyboardInterrupt:
         # Cleaning everything in case of keyboard interruption
         break_connection(server_socket)
-
+        if len(sys.argv) > 1 and sys.argv[1] == '-TGbot':
+            TGBot.kill()
 
 if __name__ == '__main__':
     main()
