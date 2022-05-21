@@ -21,11 +21,14 @@ if __name__ == '__main__':
     # DB_access.AddUser(Session(), 'Pavel', 3)
     # DB_access.AddUser(Session(), 'Dima', 25)
 
-    # DB_access.PrintComputerInfo(Session(), 'Pavel')
+    # # DB_access.PrintComputerInfo(Session(), 'Pavel')
     info = ('YouTube', 'VK', 'bash', 70, 20, 10, 200, 1.1, 20, 20, 20, 'boot time', 1.2, datetime.datetime.now())
-    DB_access.AddComputerInfo(Session(), 111, info)
+    # DB_access.AddComputerInfo(Session(), 5, info)
+    # DB_access.AddComputerInfo(Session(), 5, info)
 
-    DB_access.AddUser(Session(), 'Gena', 0)
+    # DB_access.AddUser(Session(), 'Gena', 0)
+    # DB_access.AuthorisationTime(Session())
+    DB_access.AddComputerInfo(Session(), 111, info)
 
 # посмотреть табличку в приложении
 #* sqlitebrowser test.s3db

@@ -1,4 +1,3 @@
-from requests import session
 from sqlalchemy import and_
 from models.Database import Session
 from models.applications import Application, assotiated_table
@@ -65,7 +64,11 @@ Total memory used (float)
 info = ('YouTube', 'VK', 'bash', 70, 20, 10, 200, 1.1, 20, 20, 20, 'boot time', 1.2, datetime.datetime.now())
 '''
 def AddComputerInfo(session: Session, comp: int, info: tuple):
-    
+    computer_number_list = [computer.number for computer in session.query(Computer)]
+    if comp not in computer_number_list:
+        print("You try to add computer without user. This is not you really want)")
+        return
+
     computer = Computer(comp)
     computer.first_window = info[0]
     computer.second_window = info[1]
@@ -121,3 +124,10 @@ def Assosiation(app: Application, comp: Computer):
     else:
         return None
 
+def AuthorisationTime(session: Session):
+    users = TakeUsesr(session)
+
+    for user in users:
+        first_post = session.query(Computer).join(User).filter(User.name == user).first()
+        authorisation_time = first_post.date.strftime("%d-%m-%Y %H:%M:%S")
+        print("USER: " + user + " -- AUTHORASION TIME: " + authorisation_time)
