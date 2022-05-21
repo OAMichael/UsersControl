@@ -12,7 +12,8 @@ import DB_access
 
 def main():
     # Get information about what we are going to graph
-    file = open("./Hists/Hist" + argv[1] + ".dat", "r")
+    name = argv[1]
+    file = open("./Hists/Hist" + name + ".dat", "r")
     lines = file.readlines()
 
     # Lists of active windows and their percentage
@@ -69,10 +70,10 @@ def main():
     # Setting the y-axis label and its size
     plt.ylabel("Percentage", fontsize=25)
 
-    plt.title("Most used windows by " + argv[1], fontsize=30, x=0.5, y=1.05)
+    plt.title("Most used windows by " + name, fontsize=30, x=0.5, y=1.05)
 
     # Finally plotting the graph
-    plt.savefig("./Graphs/Windows" + argv[1] + ".png")
+    plt.savefig("./Graphs/Windows" + name + ".png")
 
 if __name__ == '__main__':
     main()

@@ -133,7 +133,7 @@ def parse_message(info_string):
                   "Max used percent 1"    : max_used_percent_1,
                   "Current mouse location": current_mouse_location,
                   "Window at mouse id"    : window_at_mouse_id,
-                  "window_at_mouse_name"  : window_at_mouse_name}
+                  "window_at_mouse_name"  : window_at_mouse_name }
 
     # If there any
     if max_used_percent_2:

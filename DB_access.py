@@ -96,33 +96,38 @@ def AddComputerInfo(session: Session, comp: int, info: tuple):
 '''
 Добавляет новое приложение в таблицу приложений, если его там не было
 '''
-def AddApplication(session: Session, app: str):
+def AddApplication(session: Session, app: str, comp: int):
     apps = session.query(Application)
     new_app = Application(app)
 
     if new_app not in apps:
         session.add(new_app)
 
-        computers = session.query(Computer)
+        computer = session.query(Computer).filter(Computer.number == comp)
+        cur_computer = computer[-1]
+        new_app.computers.append(cur_computer)
+        session.commit()
 
-        for comp in computers:
-            cur_comp = Assosiation(new_app, comp)
-            if cur_comp != None:
-                new_app.computers.append(comp)
-                session.commit()
+        '''previous version'''
+        # computers = session.query(Computer)
+        # for comp in computers:
+        #     cur_comp = _assosiation(new_app, comp)
+        #     if cur_comp != None:
+        #         new_app.computers.append(comp)
+        #         session.commit()
 
     else:
         print('this application is already in database')
 
 # проводит ассоциацию между списком приложений и компьютерами, которые когда-либо его использвали
-def Assosiation(app: Application, comp: Computer):
-    if (comp.first_window == app.app_name or 
-        comp.second_window == app.app_name or 
-        comp.third_window == app.app_name):
-        # app.computers.append(comp)
-        return comp
-    else:
-        return None
+# def _assosiation(app: Application, comp: Computer):
+#     if (comp.first_window == app.app_name or 
+#         comp.second_window == app.app_name or 
+#         comp.third_window == app.app_name):
+#         # app.computers.append(comp)
+#         return comp
+#     else:
+#         return None
 
 '''
 выводит время авторизации каждого пользователя
@@ -147,3 +152,17 @@ def ExitTime(session: Session):
                          session.query(Computer).join(User).filter(User.name == user)]
         exit_time = computer_date[-1].strftime("%d-%m-%Y %H:%M:%S")
         print("USER: " + user + " -- EXIT TIME: " + exit_time)
+
+'''
+функцию возвращает список приложений по имени юзера
+'''
+def TakeAppsList(session: Session, user_name: str):
+
+    comp = [user.computer for user in session.query(User).filter(User.name == user_name)]
+    # print(comp)
+
+    for it, _ in session.query(Application.app_name, Computer.number).filter(and_(
+        assotiated_table.c.application_id == Application.id, 
+        assotiated_table.c.computer_id == Computer.id, 
+        Computer.number == comp[0])):
+        print(it)

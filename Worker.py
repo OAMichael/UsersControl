@@ -210,11 +210,11 @@ def main_iteration():
 
 
 def main():
-
-    nickname = str(input("Enter your name: "))
+    
     # Getting connection info
-    host = '192.168.0.105'
-    port = 55555
+    host = str(input("Enter main server host: "))
+    port = int(input("Enter port: "))
+    nickname = str(input("Enter your name: "))
 
     # Connecting to server
     worker = TcpClient(host, port)
