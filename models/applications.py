@@ -25,3 +25,5 @@ class Application(Base):
     def __eq__(self, other_app):
         if isinstance(other_app, Application):
             return self.app_name == other_app.app_name
+        else:
+            raise NotImplemented

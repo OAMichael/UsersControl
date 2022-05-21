@@ -17,11 +17,22 @@ def UserMemoryUsedFilter(session: Session, MemoryUsed: float):
 
 # добавляет нового юзера и компьютер, соответствующий ему
 def AddUser(session: Session, name: str, comp: int):
-    user = User(name, comp)
-    comuter = Computer(comp)
+    new_user = User(name, comp)
+    new_comuter = Computer(comp)
+    
+    exists_users = session.query(User)
+    if new_user in exists_users:
+        print("This user already exists")
+        return
+    
+    exists_computer = session.query(Computer)
+    if new_comuter in exists_computer:
+        print("This computer already exists")
+        return
+    
 
-    session.add(user)
-    session.add(comuter)
+    session.add(new_user)
+    session.add(new_comuter)
     session.commit()
     session.close()
 

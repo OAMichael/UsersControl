@@ -45,3 +45,9 @@ class Computer(Base):
                     [TOTAL MEMORY USED: {self.Total_mem_used}]\n \
                     [DATE: {self.date.strftime("%d-%m-%Y %H-%M")}]'
         return info
+    
+    def __eq__(self, other):
+        if isinstance(other, Computer):
+            return self.number == other.number
+        else:
+            raise NotImplemented
