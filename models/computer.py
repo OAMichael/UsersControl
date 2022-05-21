@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime
 from sqlalchemy.orm import relationship
 from models.Database import Base
+import datetime
 
 class Computer(Base):
     __tablename__ = 'computers'
@@ -28,6 +29,22 @@ class Computer(Base):
 
     def __init__(self, number: int):
         self.number = number
+        self.first_window = ''
+        self.second_window = ''
+        self.third_window = ''
+        self.first_window_percent = 0
+        self.second_window_percent = 0
+        self.third_window_percent = 0
+
+        self.proc_number = 0
+        self.disk_mem_usege = 0
+        self.CPU_f_min = 0
+        self.CPU_f_max = 0
+        self.CPU_f_cur = 0
+        self.Boot_time = ''
+        self.Total_mem_used = 0
+
+        self.date = datetime.datetime.now()
     
     def __repr__(self) -> str:
         info = f'COMPUTER\n \
@@ -45,3 +62,9 @@ class Computer(Base):
                     [TOTAL MEMORY USED: {self.Total_mem_used}]\n \
                     [DATE: {self.date.strftime("%d-%m-%Y %H-%M")}]'
         return info
+    
+    def __eq__(self, other):
+        if isinstance(other, Computer):
+            return self.number == other.number
+        else:
+            raise NotImplemented
