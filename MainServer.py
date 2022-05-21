@@ -6,8 +6,11 @@ import traceback
 import sys
 import subprocess
 import time
+from datetime import datetime
 from collections import deque
 from server import TcpServer
+import CreateDB
+import DB_access
 
 # Connection Data
 BUFSIZE = 2048
@@ -159,7 +162,7 @@ def break_connection(server_socket):
 
 def main():
     # First of all, configurate the server
-    host = '172.20.10.13'
+    host = '192.168.0.105'
     port = 55555
 
     # AF_INET - internet socket, SOCK_STREAM - connection-based protocol for TCP, 
@@ -201,15 +204,17 @@ def main():
 
     print("[System]: Socket setup has been done!")
 
+    CreateDB.create_database(False)
+
     # Does not wait, but we don't need to, because kill it while closing connection
-    global TGBot
-    TGBot = subprocess.Popen("./TGBot.py")
-    print("[System]: Telegram bot has been activated!")
+    #global TGBot
+    #TGBot = subprocess.Popen("./TGBot.py")
+    #print("[System]: Telegram bot has been activated!")
 
     # Prepare a file for all workers names (for the beta version)
-    file = open("./Names.dat", "w")
-    file.write("")
-    file.close()
+    #file = open("./Names.dat", "w")
+    #file.write("")
+    #file.close()
 
     # Main loop
     try:
@@ -237,12 +242,13 @@ def main():
                     print(f"[System]: New connection: ({nick}, {str(address)})")
                     # Adding new worker to list of connections, names, and main dictionary
                     connection_list.append(client)
-                    file = open("./Names.dat", "a")
-                    file.write(nick + "\n")
-                    file.close()
+                    #file = open("./Names.dat", "a")
+                    #file.write(nick + "\n")
+                    #file.close()
                     nicknames.append(nick)
                     workers[nick] = {}
                     addresses.append(address)
+                    DB_access.AddUser(DB_access.Session(), nick, nicknames.index(nick) - 1)
 
                 # But if we got a data from stdin, it's likely to be message to break connection
                 elif sock == sys.stdin:
@@ -292,20 +298,38 @@ def main():
                             # And parse all information
                             workers[nick] = parse_message(info_string)
 
+                            node = (workers[nick]["Maximum used window"], 
+                                    workers[nick]["Maximum used window 2"] if "Maximum used window 2" in workers[nick] else "None", 
+                                    workers[nick]["Maximum used window 3"] if "Maximum used window 3" in workers[nick] else "None", 
+                                    float(workers[nick]["Max used percent 1"]),
+                                    float(workers[nick]["Max used percent 2"]) if "Max used percent 2" in workers[nick] else 0,
+                                    float(workers[nick]["Max used percent 3"]) if "Max used percent 3" in workers[nick] else 0,
+                                    int(workers[nick]["Integral info"]["Number of processes"]),
+                                    float(workers[nick]["Integral info"]["Disk memory usage"]),
+                                    float(workers[nick]["Integral info"]["CPU frequency(min)"]),
+                                    float(workers[nick]["Integral info"]["CPU frequency(max)"]),
+                                    float(workers[nick]["Integral info"]["CPU frequency(current)"]),
+                                    str(workers[nick]["Integral info"]["Boot time"]),
+                                    float(workers[nick]["Integral info"]["Total memory used"]),
+                                    datetime.now() )
+
+                            DB_access.AddComputerInfo(DB_access.Session(), nicknames.index(nick) - 1, node)
+
+
                             # That's all preparing for graphing histograms of active windows
-                            lines = [workers[nick]["Maximum used window"] + "\n", workers[nick]["Max used percent 1"] + "\n"]
+                            #lines = [workers[nick]["Maximum used window"] + "\n", workers[nick]["Max used percent 1"] + "\n"]
 
-                            if "Maximum used window 2" in workers[nick]:
-                                lines.append(workers[nick]["Maximum used window 2"] + "\n")
-                                lines.append(workers[nick]["Max used percent 2"] + "\n")
+                            #if "Maximum used window 2" in workers[nick]:
+                                #lines.append(workers[nick]["Maximum used window 2"] + "\n")
+                                #lines.append(workers[nick]["Max used percent 2"] + "\n")
 
-                            if "Maximum used window 3" in workers[nick]:
-                                lines.append(workers[nick]["Maximum used window 3"] + "\n")
-                                lines.append(workers[nick]["Max used percent 3"])
+                            #if "Maximum used window 3" in workers[nick]:
+                                #lines.append(workers[nick]["Maximum used window 3"] + "\n")
+                                #lines.append(workers[nick]["Max used percent 3"])
 
-                            file = open("./Hists/Hist" + nick + ".dat", "w")
-                            file.writelines(lines)
-                            file.close()
+                            #file = open("./Hists/Hist" + nick + ".dat", "w")
+                            #file.writelines(lines)
+                            #file.close()
                     except:
                         traceback.print_exc()
                         continue

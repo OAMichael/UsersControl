@@ -9,6 +9,9 @@ from telegram.ext import CallbackQueryHandler, CommandHandler, ContextTypes
 from telegram.replykeyboardmarkup import ReplyKeyboardMarkup
 from telegram.replykeyboardremove import ReplyKeyboardRemove
 
+import CreateDB
+import DB_access
+
 import subprocess
 
 workers_list = []

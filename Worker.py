@@ -208,7 +208,7 @@ def main():
 
     nickname = str(input("Enter your name: "))
     # Getting connection info
-    host = '172.20.10.13'
+    host = '192.168.0.105'
     port = 55555
 
     # Connecting to server
