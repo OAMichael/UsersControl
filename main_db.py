@@ -12,7 +12,7 @@ if __name__ == '__main__':
     
     db_existed = os.path.exists(DATABASE_NAME)
     if not db_existed:
-        db_creator.create_database()
+        db_creator.create_database(False)
 
     '''Your code here'''
 

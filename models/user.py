@@ -17,3 +17,9 @@ class User(Base):
     def __repr__(self) -> str:
         info = f'USER: [NAME: {self.name}] [COMPUTER: {self.computer}]'
         return info
+
+    def __eq__(self, other):
+        if isinstance(other, User):
+            return self.name == other.name
+        else:
+            raise NotImplemented

@@ -1,4 +1,3 @@
-from requests import session
 from sqlalchemy import and_
 from models.Database import Session
 from models.applications import Application, assotiated_table
@@ -17,11 +16,22 @@ def UserMemoryUsedFilter(session: Session, MemoryUsed: float):
 
 # добавляет нового юзера и компьютер, соответствующий ему
 def AddUser(session: Session, name: str, comp: int):
-    user = User(name, comp)
-    comuter = Computer(comp)
+    new_user = User(name, comp)
+    new_comuter = Computer(comp)
+    
+    exists_users = session.query(User)
+    if new_user in exists_users:
+        print("This user already exists")
+        raise RuntimeError
+    
+    exists_computer = session.query(Computer)
+    if new_comuter in exists_computer:
+        print("This computer already exists")
+        raise RuntimeError
+    
 
-    session.add(user)
-    session.add(comuter)
+    session.add(new_user)
+    session.add(new_comuter)
     session.commit()
     session.close()
 
@@ -54,6 +64,11 @@ Total memory used (float)
 info = ('YouTube', 'VK', 'bash', 70, 20, 10, 200, 1.1, 20, 20, 20, 'boot time', 1.2, datetime.datetime.now())
 '''
 def AddComputerInfo(session: Session, comp: int, info: tuple):
+    computer_number_list = [computer.number for computer in session.query(Computer)]
+    if comp not in computer_number_list:
+        print("You try to add computer without user. This is not you really want)")
+        raise RuntimeError
+
     computer = Computer(comp)
     computer.first_window = info[0]
     computer.second_window = info[1]
@@ -109,3 +124,26 @@ def Assosiation(app: Application, comp: Computer):
     else:
         return None
 
+'''
+выводит время авторизации каждого пользователя
+'''
+def AuthorisationTime(session: Session):
+    users = TakeUsesr(session)
+
+    for user in users:
+        first_post = session.query(Computer).join(User).filter(User.name == user).first()
+        authorisation_time = first_post.date.strftime("%d-%m-%Y %H:%M:%S")
+        print("USER: " + user + " -- AUTHORASION TIME: " + authorisation_time)
+
+'''
+выводит время последней активности каждого пользователя
+'''
+def ExitTime(session: Session):
+    users = TakeUsesr(session)
+
+    for user in users:
+        computer_date = [computer.date 
+                         for computer in 
+                         session.query(Computer).join(User).filter(User.name == user)]
+        exit_time = computer_date[-1].strftime("%d-%m-%Y %H:%M:%S")
+        print("USER: " + user + " -- EXIT TIME: " + exit_time)
