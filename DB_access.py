@@ -65,6 +65,7 @@ Total memory used (float)
 info = ('YouTube', 'VK', 'bash', 70, 20, 10, 200, 1.1, 20, 20, 20, 'boot time', 1.2, datetime.datetime.now())
 '''
 def AddComputerInfo(session: Session, comp: int, info: tuple):
+    
     computer = Computer(comp)
     computer.first_window = info[0]
     computer.second_window = info[1]
