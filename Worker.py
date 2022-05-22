@@ -222,11 +222,13 @@ def main():
             file = open("FileToSend.dat", "rb")
             worker.sendfile("FileToSend.dat", file)
             file.close()
+            os.remove("FileToSend.dat")
             time.sleep(5)
 
     except:
         print("Closing connection...")
-        os.remove("FileToSend.dat")
+        if os.path.isfile("FileToSend.dat"):
+            os.remove("FileToSend.dat")
         pass
 
 if __name__ == '__main__':

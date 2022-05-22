@@ -65,7 +65,7 @@ def main():
     plt.title("Most used windows by " + name, fontsize=30, x=0.5, y=1.05)
 
     # Finally plotting the graph
-    plt.savefig("./Graphs/Windows" + name + ".png")
+    plt.savefig("./Windows" + name + ".png")
 
 if __name__ == '__main__':
     main()

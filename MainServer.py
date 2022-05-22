@@ -254,6 +254,7 @@ def main():
                             file = open("n_FileToSend.dat", "r")
                             info_string = file.read()
                             file.close()
+                            os.remove("n_FileToSend.dat")
 
                             nick = nicknames[connection_list.index(sock)]
                             # And parse all information
@@ -286,7 +287,8 @@ def main():
             pass
         if len(sys.argv) > 1 and sys.argv[1] == '--TGbot':
             TGBot.kill()
-        os.remove("n_FileToSend.dat")
+        if os.path.isfile("n_FileToSend.dat"):
+            os.remove("n_FileToSend.dat")
 
 if __name__ == '__main__':
     main()

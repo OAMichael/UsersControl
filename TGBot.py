@@ -8,6 +8,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackQueryHandler, CommandHandler, ContextTypes
 from telegram.replykeyboardmarkup import ReplyKeyboardMarkup
 from telegram.replykeyboardremove import ReplyKeyboardRemove
+import os
 
 import CreateDB
 import DB_access
@@ -56,9 +57,9 @@ def worker_info(worker, update: Update, context: CallbackContext):
     CompInfo = DB_access.GetComputerInfo(DB_access.Session(), worker)
     Text += f"*Computer number:* {CompInfo.number}\n"
     Text += f"*Active window:* {CompInfo.curent_window_active}\n" 
-    Text += f"*Number of processes:* {CompInfo.proc_number}\n"
+    Text += f"*Number of windows:* {CompInfo.proc_number}\n"
     Text += f"*Disk memory usage:* {CompInfo.disk_mem_usege}%\n"
-    Text += f"*CPU frequency: current:* {CompInfo.CPU_f_cur} MHz, min: {CompInfo.CPU_f_min} MHz, max: {CompInfo.CPU_f_max} MHz\n"
+    Text += f"*CPU frequency:* current: {CompInfo.CPU_f_cur} MHz, min: {CompInfo.CPU_f_min} MHz, max: {CompInfo.CPU_f_max} MHz\n"
     Text += f"*System boot time:* {CompInfo.Boot_time}\n"
     Text += f"*Total memory used:* {CompInfo.Total_mem_used}%\n"
 
@@ -66,7 +67,8 @@ def worker_info(worker, update: Update, context: CallbackContext):
 
     # Automatically waits
     plot = subprocess.run(["./Plot.py", worker])
-    context.bot.send_photo(update.message.chat_id, photo=open("./Graphs/Windows" + worker + ".png", 'rb'))    
+    context.bot.send_photo(update.message.chat_id, photo=open("./Windows" + worker + ".png", 'rb'))
+    os.remove("./Windows" + worker + ".png")
 
 
 def info(update: Update, context: CallbackContext):
