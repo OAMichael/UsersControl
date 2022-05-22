@@ -19,9 +19,9 @@ if __name__ == '__main__':
     # DB_access.AddApplication(Session(), 'ddd', 4)
     # DB_access.TakeAppsList(Session(), 'Евпраксия Борисовна Панова')
 
-    list1, list2 = DB_access.MostUsasbleWindows(Session(), 'Ратибор Даниилович Фокин')
-    print(list1)
-    print(list2)
+    # list1, list2 = DB_access.MostUsasbleWindows(Session(), 'Ратибор Даниилович Фокин')
+    # print(list1)
+    # print(list2)
 
 # посмотреть табличку в приложении
 #* sqlitebrowser test.s3db

@@ -10,13 +10,13 @@ def PrintComputerInfo(session: Session, name: str):
         print(it)
 
 # выводит список всех пользователей, чей Total_mem_used превышает заданное значение
-def UserMemoryUsedFilter(session: Session, MemoryUsed: float):
-    for it in session.query(User).join(Computer).filter(Computer.Total_mem_used >= MemoryUsed):
-        print(it)
+# def UserMemoryUsedFilter(session: Session, MemoryUsed: float):
+#     for it in session.query(User).join(Computer).filter(Computer.Total_mem_used >= MemoryUsed):
+#         print(it)
 
 # добавляет нового юзера и компьютер, соответствующий ему
-def AddUser(session: Session, name: str, comp: int):
-    new_user = User(name, comp)
+def AddUser(session: Session, name: str, comp: int, ip: str):
+    new_user = User(name, comp, ip)
     new_comuter = Computer(comp)
     
     exists_users = session.query(User)
