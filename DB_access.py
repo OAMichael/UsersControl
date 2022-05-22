@@ -162,7 +162,7 @@ def AddApplication(session: Session, app_info: dict):
 выводит время авторизации каждого пользователя
 '''
 def AuthorisationTime(session: Session):
-    users = TakeUsesr(session)
+    users = TakeUsers(session)
 
     for user in users:
         first_post = session.query(Computer).join(User).filter(User.name == user).first()
@@ -173,7 +173,7 @@ def AuthorisationTime(session: Session):
 выводит время последней активности каждого пользователя
 '''
 def ExitTime(session: Session):
-    users = TakeUsesr(session)
+    users = TakeUsers(session)
 
     for user in users:
         computer_date = [computer.date 
