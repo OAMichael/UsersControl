@@ -74,7 +74,7 @@ info = {
     'Total_mem_used' : 1.2
     }
 '''
-def AddComputerInfo(session: Session, comp: int, info: tuple):
+def AddComputerInfo(session: Session, comp: int, info: dict):
     computer_number_list = [computer.number for computer in session.query(Computer)]
     if comp not in computer_number_list:
         print("You try to add computer without user. This is not you really want)")
@@ -115,7 +115,7 @@ app_info = {
     'createtime': время создания,
     'status': статус работы,
     'rss': rss,
-    'rms': rms,
+    'vms': vms,
     'shared': shared,
     'data': data
 }
@@ -128,7 +128,7 @@ app_info = {
     'create_time': '01-01-01',
     'status': 'active',
     'rss': 0,
-    'rms': 0,
+    'vms': 0,
     'shared': 0,
     'data': 0
 }
@@ -148,7 +148,7 @@ def AddApplication(session: Session, app_info: dict):
     new_app.create_time = app_info['create_time']
     new_app.status = app_info['status']
     new_app.rss = app_info['rss']
-    new_app.rms = app_info['rms']
+    new_app.vms = app_info['vms']
     new_app.shared = app_info['shared']
     new_app.data = app_info['data']
     new_app.date = datetime.now()
@@ -156,6 +156,7 @@ def AddApplication(session: Session, app_info: dict):
 
     session.add(new_app)
     session.commit()
+    session.close()
 
 '''
 выводит время авторизации каждого пользователя

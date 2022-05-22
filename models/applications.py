@@ -14,7 +14,7 @@ class Application(Base):
     create_time = Column(String)
     status = Column(String(16))
     rss = Column(Integer)
-    rms = Column(Integer)
+    vms = Column(Integer)
     shared = Column(Integer)
     data = Column(Integer)
     date = Column(DateTime)
@@ -26,7 +26,7 @@ class Application(Base):
         self.create_time = ''
         self.status = ''
         self.rss = 0
-        self.rms = 0
+        self.vms = 0
         self.shared = 0
         self.data = 0
         self.date = datetime.now()

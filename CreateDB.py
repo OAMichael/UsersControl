@@ -55,7 +55,7 @@ def _load_fake_data(session: Session):
                 'create_time': '01-01-01',
                 'status': 'active',
                 'rss': 0,
-                'rms': 0,
+                'vms': 0,
                 'shared': 0,
                 'data': 0
             }
@@ -67,7 +67,7 @@ def _load_fake_data(session: Session):
                 'create_time': '01-01-01',
                 'status': 'active',
                 'rss': 0,
-                'rms': 0,
+                'vms': 0,
                 'shared': 0,
                 'data': 0
             }
@@ -79,7 +79,7 @@ def _load_fake_data(session: Session):
                 'create_time': '01-01-01',
                 'status': 'active',
                 'rss': 0,
-                'rms': 0,
+                'vms': 0,
                 'shared': 0,
                 'data': 0
             }
@@ -91,7 +91,7 @@ def _load_fake_data(session: Session):
                 'create_time': '01-01-01',
                 'status': 'active',
                 'rss': 0,
-                'rms': 0,
+                'vms': 0,
                 'shared': 0,
                 'data': 0
             }

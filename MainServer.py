@@ -24,7 +24,6 @@ TCP_KEEPALIVE_TIMEOUT = 300
 connection_list = []
 nicknames = []
 addresses = []
-workers = {}
 
 # Command which persuade server to close connection
 quit_list = ["quit\n", "Quit\n", "q\n", "exit\n", "Exit\n"]
@@ -63,88 +62,52 @@ def parse_message(info_string):
         processes.append(tuple(line.split(",")))
 
     # Parse for system info
-    integral_info = { 'Number of processes': message_list_integral[0], 
-                      'Disk memory usage':  message_list_integral[1], 
-                      'CPU frequency(min)': message_list_integral[2],
-                      'CPU frequency(max)': message_list_integral[3], 
-                      'CPU frequency(current)': message_list_integral[4], 
-                      'Boot time': message_list_integral[5], 
-                      'Total memory used': message_list_integral[6]  }
-
-    # Case of additional info about cores' temperature
-    if len(message_list_integral) > 7:
-        for n in range(7, len(message_list_integral)):
-            integral_info[f'Core {n - 7} temperature'] = message_list_integral[n]
+    integral_node = { 'proc_number': message_list_integral[0], 
+                      'disk_mem_usege':  message_list_integral[1], 
+                      'CPU_f_min': message_list_integral[2],
+                      'CPU_f_max': message_list_integral[3], 
+                      'CPU_f_cur': message_list_integral[4], 
+                      'Boot_time': message_list_integral[5], 
+                      'Total_mem_used': message_list_integral[6],  
+                      'first_window': "None",
+                      'first_window_percent': 0,
+                      'second_window': "None",
+                      'second_window_percent': 0,
+                      'third_window': "None",
+                      'third_window_percent': 0
+                      }
 
     # Now get information about windows
     opened_windows = []
-    max_used_percent_2 = 0
-    max_used_percent_3 = 0
 
     # Very primitive, but it works
     for line in message_list_windows:
-        if 'Current window id::::' in line:
-            current_window_id = line.split('::::')[1]
-            continue
         
-        if 'Current window name::::' in line:
-            current_window_name = line.split('::::')[1]
-            continue
+        #if 'Current window name::::' in line:
+            #current_window_name = line.split('::::')[1]
+            #continue
 
         if 'Maximum used window::::' in line:
-            window_max_used_1  = line.split('::::')[1]
-            max_used_percent_1 = line.split('::::')[2]
+            integral_node['first_window']         = line.split('::::')[1]
+            integral_node['first_window_percent'] = line.split('::::')[2]
             continue
 
         if 'Second maximum used window::::' in line:
-            window_max_used_2  = line.split('::::')[1]
-            max_used_percent_2 = line.split('::::')[2]
+            integral_node['second_window']         = line.split('::::')[1]
+            integral_node['second_window_percent'] = line.split('::::')[2]
             continue
 
         if 'Third maximum used window::::' in line:
-            window_max_used_3  = line.split('::::')[1]
-            max_used_percent_3 = line.split('::::')[2]
-            continue
-
-        if 'Current mouse location::::' in line:
-            current_mouse_location = line.split('::::')[1]
-            continue
-
-        if 'Window at mouse id::::' in line:
-            window_at_mouse_id = line.split('::::')[1] 
-            continue
-
-        if 'Window at mouse name::::' in line:
-            window_at_mouse_name = line.split('::::')[1]
+            integral_node['third_window']         = line.split('::::')[1]
+            integral_node['third_window_percent'] = line.split('::::')[2]
             continue
 
         # All named info is described above. Only unnamed information is about 
         # opened windows, so code goes there only if everything else is read
-        if line:
-            opened_windows.append(line)
+        #if line:
+            #opened_windows.append(line)
 
-    # Now assemble everything into one dictionary which will be a value-node for a main dict
-    work_info = { "Processes"             : processes, 
-                  "Integral info"         : integral_info, 
-                  "Opened windows"        : opened_windows,
-                  "Current window id"     : current_window_id, 
-                  "Current window name"   : current_window_name,
-                  "Maximum used window"   : window_max_used_1,
-                  "Max used percent 1"    : max_used_percent_1,
-                  "Current mouse location": current_mouse_location,
-                  "Window at mouse id"    : window_at_mouse_id,
-                  "window_at_mouse_name"  : window_at_mouse_name }
-
-    # If there any
-    if max_used_percent_2:
-        work_info["Maximum used window 2"] = window_max_used_2
-        work_info["Max used percent 2"]    = max_used_percent_2
-
-    if max_used_percent_3:
-        work_info["Maximum used window 3"] = window_max_used_3
-        work_info["Max used percent 3"]    = max_used_percent_3
-
-    return work_info
+    return integral_node, processes
 
 
 # Function which server connection
@@ -211,7 +174,7 @@ def main():
         CreateDB.create_database(False)
 
     # Does not wait, but we don't need to, because kill it while closing connection
-    if len(sys.argv) > 1 and sys.argv[1] == '-TGbot':
+    if len(sys.argv) > 1 and sys.argv[1] == '--TGbot':
         global TGBot
         TGBot = subprocess.Popen("./TGBot.py")
         print("[System]: Telegram bot has been activated!")
@@ -232,20 +195,19 @@ def main():
                     nick = client.recv(BUFSIZE).decode(ENCODE)
                     # If there is already such name, decline the worker connection
                     if nick in nicknames:
-                        #client.sendall("[Server]: Sorry, but this nickname already exists. Try another one.".encode(ENCODE))
                         disconnect_client(client)
                         continue
-                    #else:
-                        # And if there isn't, accept new user
-                        #client.sendall("[Server]: Great nickname. Welcome aboard.".encode(ENCODE))
+
                     # Show message about new connection on server
-                    print(f"[System]: New connection: ({nick}, {str(address)})")
+                    print(f"[System]: New connection: ({nick}, {address})")
                     # Adding new worker to list of connections, names, and main dictionary
                     connection_list.append(client)
                     nicknames.append(nick)
-                    workers[nick] = {}
                     addresses.append(address)
-                    DB_access.AddUser(DB_access.Session(), nick, nicknames.index(nick) - 1)
+                    try:
+                        DB_access.AddUser(DB_access.Session(), nick, nicknames.index(nick) - 1, f"{address}")
+                    except:
+                        pass
 
                 # But if we got a data from stdin, it's likely to be message to break connection
                 elif sock == sys.stdin:
@@ -293,24 +255,23 @@ def main():
 
                             nick = nicknames[connection_list.index(sock)]
                             # And parse all information
-                            workers[nick] = parse_message(info_string)
+                            node, processes = parse_message(info_string)
+                            try:
+                                DB_access.AddComputerInfo(DB_access.Session(), nicknames.index(nick) - 1, node)
 
-                            node = (workers[nick]["Maximum used window"], 
-                                    workers[nick]["Maximum used window 2"] if "Maximum used window 2" in workers[nick] else "None", 
-                                    workers[nick]["Maximum used window 3"] if "Maximum used window 3" in workers[nick] else "None", 
-                                    float(workers[nick]["Max used percent 1"]),
-                                    float(workers[nick]["Max used percent 2"]) if "Max used percent 2" in workers[nick] else 0,
-                                    float(workers[nick]["Max used percent 3"]) if "Max used percent 3" in workers[nick] else 0,
-                                    int(workers[nick]["Integral info"]["Number of processes"]),
-                                    float(workers[nick]["Integral info"]["Disk memory usage"]),
-                                    float(workers[nick]["Integral info"]["CPU frequency(min)"]),
-                                    float(workers[nick]["Integral info"]["CPU frequency(max)"]),
-                                    float(workers[nick]["Integral info"]["CPU frequency(current)"]),
-                                    str(workers[nick]["Integral info"]["Boot time"]),
-                                    float(workers[nick]["Integral info"]["Total memory used"]),
-                                    datetime.now() )
-
-                            DB_access.AddComputerInfo(DB_access.Session(), nicknames.index(nick) - 1, node)
+                                for process in processes:
+                                    proc_node = {   'app_name': process[0],
+                                                    'computer': nicknames.index(nick) - 1,
+                                                    'create_time': process[1],
+                                                    'status': process[2],
+                                                    'rss': process[3],
+                                                    'vms': process[4],
+                                                    'shared': process[5],
+                                                    'data': process[6]
+                                               }
+                                    DB_access.AddApplication(DB_access.Session(), proc_node)
+                            except:
+                                pass
 
                     except:
                         traceback.print_exc()
@@ -318,7 +279,7 @@ def main():
     except KeyboardInterrupt:
         # Cleaning everything in case of keyboard interruption
         break_connection(server_socket)
-        if len(sys.argv) > 1 and sys.argv[1] == '-TGbot':
+        if len(sys.argv) > 1 and sys.argv[1] == '--TGbot':
             TGBot.kill()
 
 if __name__ == '__main__':

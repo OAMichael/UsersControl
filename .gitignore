@@ -4,3 +4,4 @@ __pycache__
 *.dat
 worker_base.sqlite
 main_db.py
+*.txt

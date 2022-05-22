@@ -82,19 +82,6 @@ def get_integral_info():
             'CPU frequency(max)': str(cpu_freq.max), 'CPU frequency(current)': str(cpu_freq.current), 
             'Boot time': boot_time, 'Total memory used': str(psutil.virtual_memory().percent)}
 
-    # trying to obtain information about cores temperature
-    try:
-        temps = psutil.sensors_temperatures()
-    except RuntimeWarning:
-        pass
-
-    if temps:
-        num_of_cores = 0
-        for name, entries in temps.items():
-            for entry in entries:
-                info[f'Core {num_of_cores} temperature'] = 'current={0:<6f}\N{DEGREE SIGN}C, high={0:<6f}\N{DEGREE SIGN}C, critical={0:<6f}\N{DEGREE SIGN}C'.format(entry.current, entry.high, entry.critical)
-                num_of_cores += 1
-
     for inf in info:
         if not info[inf]:
             info[inf] = 0
@@ -126,12 +113,8 @@ def get_win_info():
 
     # Active window
     try:
-        xdo_window_id = xdo.get_active_window()
-        xdo_window_name = xdo.get_window_name(xdo_window_id).decode('UTF-8')
-        info_string += f"Current window id::::{str(xdo_window_id)}\n"
+        xdo_window_name = xdo.get_window_name(xdo.get_active_window()).decode('UTF-8')
         info_string += f"Current window name::::{xdo_window_name}\n"
-
-        time_activ.append((str(datetime.now().strftime("%d-%m-%Y %H:%M:%S")), xdo_window_name))
 
         if xdo_window_name in win_activ.keys():
             win_activ[xdo_window_name] += 1
@@ -178,22 +161,6 @@ def get_win_info():
     except:
         pass
 
-    # Get information about mouse location, especially which window mouse is over
-    try:
-        mouse_loc = xdo.get_mouse_location()
-        info_string += f"Current mouse location::::" + f"({mouse_loc.x}, {mouse_loc.y})" + "\n"
-    except:
-        pass
-
-    window_at_mouse_id = xdo.get_window_at_mouse()
-    info_string += f"Window at mouse id::::" + str(window_at_mouse_id) + "\n"
-    
-    if window_at_mouse_id != 0:
-        window_at_mouse_name = xdo.get_window_name(window_at_mouse_id).decode('UTF-8')
-        info_string += f"Window at mouse name::::" + window_at_mouse_name + "\n"
-    else:
-        info_string += f"Window at mouse name::::" + "Root window" + "\n"
-
     file = open("./FileToSend.dat", "a")
     file.write(info_string)
     file.close()
@@ -224,10 +191,6 @@ def main():
     # dictionary with {"[window name] : [activity percentage]"}
     global win_activ    
     win_activ = {}
-
-    # list with node as [datetime, active window]
-    global time_activ
-    time_activ = []
 
     # number of iterations
     global loop_times
