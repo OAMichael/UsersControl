@@ -5,3 +5,4 @@ __pycache__
 worker_base.sqlite
 db_test.py
 *.txt
+QtBase.py

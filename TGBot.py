@@ -51,7 +51,9 @@ def worker_info(worker, update: Update, context: CallbackContext):
         update.message.reply_text("There is no such worker")
         return
 
-    Text = f"Worker name:" + worker
+    Text = f"Worker name: " + worker
+
+    DB_access.PrintComputerInfo(DB_access.Session(), worker)
 
     update.message.reply_text(Text)
 

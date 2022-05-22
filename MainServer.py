@@ -120,7 +120,7 @@ def break_connection(server_socket):
             continue
         connection.sendall("[System]: Closing connection...".encode(ENCODE))
         disconnect_client(connection)
-    # And then shut down the server and killing the bot
+    # And then shut down the server
     server_socket.shutdown(socket.SHUT_RDWR)
     server_socket.close()
     print("[System]: Closing connection...")
@@ -178,7 +178,7 @@ def main():
     # Does not wait, but we don't need to, because kill it while closing connection
     if len(sys.argv) > 1 and sys.argv[1] == '--TGbot':
         global TGBot
-        TGBot = subprocess.Popen("TGBot.py")
+        TGBot = subprocess.Popen("./TGBot.py")
         print("[System]: Telegram bot has been activated!")
 
     # Main loop
