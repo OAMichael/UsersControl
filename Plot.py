@@ -13,28 +13,15 @@ import DB_access
 def main():
     # Get information about what we are going to graph
     name = argv[1]
-    file = open("./Hists/Hist" + name + ".dat", "r")
-    lines = file.readlines()
-
     # Lists of active windows and their percentage
-    win_list = []
-    percent_list = []
-
-    # Filling them. Truncate name of windows in front and back if it's too long
-    try:
-        for i in range(3):
-            new_line = (lines[2*i][:16] + '...' + lines[2*i][-16:]) if len(lines[2*i]) > 35 else lines[2*i]
-
-            win_list.append(new_line)
-            percent_list.append(float(lines[2*i + 1]))
-    except:
-        pass
-    file.close()
+    win_list, percent_list = DB_access.MostUsableWindows(DB_access.Session(), name)
 
     for win in win_list:
         if percent_list[win_list.index(win)] == 0:
             del percent_list[win_list.index(win)]
             del win_list[win_list.index(win)]
+        else:
+            win_list[win_list.index(win)] = (win[:16] + '...' + win[-16:]) if len(win) > 35 else win
 
     # Preparing for dataframe
     data = {"Windows":    win_list,

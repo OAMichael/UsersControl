@@ -108,26 +108,8 @@ def AddApplication(session: Session, app: str, comp: int):
         new_app.computers.append(cur_computer)
         session.commit()
 
-        '''previous version'''
-        # computers = session.query(Computer)
-        # for comp in computers:
-        #     cur_comp = _assosiation(new_app, comp)
-        #     if cur_comp != None:
-        #         new_app.computers.append(comp)
-        #         session.commit()
-
     else:
         print('this application is already in database')
-
-# проводит ассоциацию между списком приложений и компьютерами, которые когда-либо его использвали
-# def _assosiation(app: Application, comp: Computer):
-#     if (comp.first_window == app.app_name or 
-#         comp.second_window == app.app_name or 
-#         comp.third_window == app.app_name):
-#         # app.computers.append(comp)
-#         return comp
-#     else:
-#         return None
 
 '''
 выводит время авторизации каждого пользователя
@@ -159,10 +141,31 @@ def ExitTime(session: Session):
 def TakeAppsList(session: Session, user_name: str):
 
     comp = [user.computer for user in session.query(User).filter(User.name == user_name)]
-    # print(comp)
 
+    print("USER: " + user_name + "\nCOMPUTER: %d\n" %comp[0])
     for it, _ in session.query(Application.app_name, Computer.number).filter(and_(
         assotiated_table.c.application_id == Application.id, 
         assotiated_table.c.computer_id == Computer.id, 
         Computer.number == comp[0])):
         print(it)
+
+''' 
+по заданному имени пользователя возвращает 2 списка:
+первый список (с нулевого индекса) окна первого, второго и третьего приоритета
+второй список -- их процентное соотношение по времени
+'''
+def MostUsableWindows(session: Session, user_name: str):
+    comp = session.query(Computer).join(User).filter(User.name == user_name)
+    cur_comp = comp[-1]
+
+    most_usable_windows = []
+    most_usable_windows_percent = []
+
+    most_usable_windows.append(cur_comp.first_window)
+    most_usable_windows.append(cur_comp.second_window)
+    most_usable_windows.append(cur_comp.third_window)
+    most_usable_windows_percent.append(cur_comp.first_window_percent)
+    most_usable_windows_percent.append(cur_comp.second_window_percent)
+    most_usable_windows_percent.append(cur_comp.third_window_percent)
+
+    return most_usable_windows, most_usable_windows_percent

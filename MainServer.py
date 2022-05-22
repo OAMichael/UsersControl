@@ -312,20 +312,6 @@ def main():
 
                             DB_access.AddComputerInfo(DB_access.Session(), nicknames.index(nick) - 1, node)
 
-                            # That's all preparing for graphing histograms of active windows
-                            #lines = [workers[nick]["Maximum used window"] + "\n", workers[nick]["Max used percent 1"] + "\n"]
-
-                            #if "Maximum used window 2" in workers[nick]:
-                                #lines.append(workers[nick]["Maximum used window 2"] + "\n")
-                                #lines.append(workers[nick]["Max used percent 2"] + "\n")
-
-                            #if "Maximum used window 3" in workers[nick]:
-                                #lines.append(workers[nick]["Maximum used window 3"] + "\n")
-                                #lines.append(workers[nick]["Max used percent 3"])
-
-                            #file = open("./Hists/Hist" + nick + ".dat", "w")
-                            #file.writelines(lines)
-                            #file.close()
                     except:
                         traceback.print_exc()
                         continue
