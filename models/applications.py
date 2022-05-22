@@ -32,7 +32,7 @@ class Application(Base):
         self.date = datetime.now()
 
     def __repr__(self) -> str:
-        return f'Application [ID: {self.id}, Name: {self.app_name}]'
+        return f'Application [ID: {self.id}, Name: {self.app_name}], [TIME: {self.date}]'
     
     def __eq__(self, other_app):
         if isinstance(other_app, Application):
