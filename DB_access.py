@@ -1,22 +1,19 @@
 from sqlalchemy import and_
 from models.Database import Session
-from models.applications import Application, assotiated_table
+from models.applications import Application
 from models.user import User
 from models.computer import Computer
+
+from datetime import datetime
 
 # дает полную информацию о компьютере по имени пользователя
 def PrintComputerInfo(session: Session, name: str):
     for it in session.query(Computer).join(User).filter(User.name == name):
         print(it)
 
-# выводит список всех пользователей, чей Total_mem_used превышает заданное значение
-def UserMemoryUsedFilter(session: Session, MemoryUsed: float):
-    for it in session.query(User).join(Computer).filter(Computer.Total_mem_used >= MemoryUsed):
-        print(it)
-
 # добавляет нового юзера и компьютер, соответствующий ему
-def AddUser(session: Session, name: str, comp: int):
-    new_user = User(name, comp)
+def AddUser(session: Session, name: str, comp: int, ip: str):
+    new_user = User(name, comp, ip)
     new_comuter = Computer(comp)
     
     exists_users = session.query(User)
@@ -43,7 +40,7 @@ def TakeUsesr(session: Session):
 
 '''
 дообавляем запись о компьютере под номером comp
-информация передается в кортеже, который имеет следующую стуктуру
+информация передается в словаре, который имеет следующую стуктуру
 
 название окна первого приоритета (str)
 название окна второго приоритета (str)
@@ -61,7 +58,21 @@ Total memory used (float)
 Текущая дата и время (указывается через datetime.datetime.now())
 
 Пример:
-info = ('YouTube', 'VK', 'bash', 70, 20, 10, 200, 1.1, 20, 20, 20, 'boot time', 1.2, datetime.datetime.now())
+info = {
+    'first_window' : 'YouTube', 
+    'second_window' : 'VK', 
+    'third_window' : 'bash', 
+    'first_window_percent' : 70, 
+    'second_window_percent' : 20, 
+    'third_window_percent' : 10, 
+    'proc_number' : 200, 
+    'disk_mem_usege' : 1.1, 
+    'CPU_f_min' : 20, 
+    'CPU_f_max' : 20, 
+    'CPU_f_cur' : 20, 
+    'Boot_time' : 'boot time', 
+    'Total_mem_used' : 1.2
+    }
 '''
 def AddComputerInfo(session: Session, comp: int, info: tuple):
     computer_number_list = [computer.number for computer in session.query(Computer)]
@@ -70,24 +81,24 @@ def AddComputerInfo(session: Session, comp: int, info: tuple):
         raise RuntimeError
 
     computer = Computer(comp)
-    computer.first_window = info[0]
-    computer.second_window = info[1]
-    computer.third_window = info[2]
+    computer.first_window = info['first_window']
+    computer.second_window = info['second_window']
+    computer.third_window = info['third_window']
 
-    computer.first_window_percent = info[3]
-    computer.second_window_percent = info[4]
-    computer.third_window_percent = info[5]
+    computer.first_window_percent = info['first_window_percent']
+    computer.second_window_percent = info['second_window_percent']
+    computer.third_window_percent = info['third_window_percent']
 
-    computer.proc_number = info[6]
+    computer.proc_number = info['proc_number']
 
-    computer.disk_mem_usege = info[7]
+    computer.disk_mem_usege = info['disk_mem_usege']
 
-    computer.CPU_f_min = info[8]
-    computer.CPU_f_max = info[9]
-    computer.CPU_f_cur = info[10]
-    computer.Boot_time = info[11]
-    computer.Total_mem_used = info[12]
-    computer.date = info[13]
+    computer.CPU_f_min = info['CPU_f_min']
+    computer.CPU_f_max = info['CPU_f_max']
+    computer.CPU_f_cur = info['CPU_f_cur']
+    computer.Boot_time = info['Boot_time']
+    computer.Total_mem_used = info['Total_mem_used']
+    computer.date = datetime.now()
 
     session.add(computer)
     session.commit()
@@ -95,21 +106,56 @@ def AddComputerInfo(session: Session, comp: int, info: tuple):
 
 '''
 Добавляет новое приложение в таблицу приложений, если его там не было
+В аргументы функции передается словарь с информацией о приложении
+Словарь имеет следующую структуру:
+
+app_info = {
+    'app_name': имя приложения,
+    'computer': компьютер на котором было открыто приложение,
+    'createtime': время создания,
+    'status': статус работы,
+    'rss': rss,
+    'rms': rms,
+    'shared': shared,
+    'data': data
+}
+
+Пример:
+
+app_info = {
+    'app_name': 'YouTube',
+    'computer': 4,
+    'create_time': '01-01-01',
+    'status': 'active',
+    'rss': 0,
+    'rms': 0,
+    'shared': 0,
+    'data': 0
+}
 '''
-def AddApplication(session: Session, app: str, comp: int):
+def AddApplication(session: Session, app_info: dict):
+
+    computers = [comp.number for comp in session.query(Computer)]
+    if app_info['computer'] not in computers:
+        print('You try to add application for computer [№ %d], that is not exist' %app_info['computer'])
+        raise RuntimeError
+
+    # поучаем список все существующих приложений
     apps = session.query(Application)
-    new_app = Application(app)
+    # создаем прообраз нового приложения
+    new_app = Application(app_info['app_name'], app_info['computer'])
 
-    if new_app not in apps:
-        session.add(new_app)
+    new_app.create_time = app_info['create_time']
+    new_app.status = app_info['status']
+    new_app.rss = app_info['rss']
+    new_app.rms = app_info['rms']
+    new_app.shared = app_info['shared']
+    new_app.data = app_info['data']
+    new_app.date = datetime.now()
 
-        computer = session.query(Computer).filter(Computer.number == comp)
-        cur_computer = computer[-1]
-        new_app.computers.append(cur_computer)
-        session.commit()
 
-    else:
-        print('this application is already in database')
+    session.add(new_app)
+    session.commit()
 
 '''
 выводит время авторизации каждого пользователя
@@ -139,14 +185,10 @@ def ExitTime(session: Session):
 функцию возвращает список приложений по имени юзера
 '''
 def TakeAppsList(session: Session, user_name: str):
-
     comp = [user.computer for user in session.query(User).filter(User.name == user_name)]
 
     print("USER: " + user_name + "\nCOMPUTER: %d\n" %comp[0])
-    for it, _ in session.query(Application.app_name, Computer.number).filter(and_(
-        assotiated_table.c.application_id == Application.id, 
-        assotiated_table.c.computer_id == Computer.id, 
-        Computer.number == comp[0])):
+    for it in session.query(Application).filter(Application.computer == comp[0]):
         print(it)
 
 ''' 

@@ -9,13 +9,15 @@ class User(Base):
     #TODO: указать, что это поле не должно быть пустым
     name = Column(String)
     computer = Column(Integer, ForeignKey('computers.number'))
+    ip_addr = Column(String)
 
-    def __init__(self, name: str, computer_id: int):
+    def __init__(self, name: str, computer_id: int, ip_addr = ''):
         self.name = name
         self.computer = computer_id
+        self.ip_addr = ip_addr
 
     def __repr__(self) -> str:
-        info = f'USER: [NAME: {self.name}] [COMPUTER: {self.computer}]'
+        info = f'USER: [NAME: {self.name}] [COMPUTER: {self.computer}] [IP: {self.ip_addr}]'
         return info
 
     def __eq__(self, other):
