@@ -43,7 +43,8 @@ def disconnect_client(user):
             if e.errno == 57:
                 pass
             else:
-                traceback.print_exc()
+                print("[System]: The user doesn't exist or already removed")
+                pass
     else:
         print("[System]: Trying to disconnect unknown worker")
 
@@ -51,7 +52,8 @@ def disconnect_client(user):
 # Function which parses newly brought message into separate lines and info
 def parse_message(info_string):
     # There are three main blocks: processes, system and windows
-    message_list_proc, message_list_integral, message_list_windows = info_string.split("\nNEW_INFO\n")
+    message_list_windows, message_list_proc, message_list_integral = info_string.split("\nNEW_INFO\n")
+    
     message_list_proc     = message_list_proc.split("\n")
     message_list_integral = message_list_integral.split("\n")
     message_list_windows  = message_list_windows.split("\n")
@@ -83,9 +85,9 @@ def parse_message(info_string):
     # Very primitive, but it works
     for line in message_list_windows:
         
-        #if 'Current window name::::' in line:
-            #current_window_name = line.split('::::')[1]
-            #continue
+        if 'Current window name::::' in line:
+            integral_node['curent_window_active'] = line.split('::::')[1]
+            continue
 
         if 'Maximum used window::::' in line:
             integral_node['first_window']         = line.split('::::')[1]
@@ -176,7 +178,7 @@ def main():
     # Does not wait, but we don't need to, because kill it while closing connection
     if len(sys.argv) > 1 and sys.argv[1] == '--TGbot':
         global TGBot
-        TGBot = subprocess.Popen("./TGBot.py")
+        TGBot = subprocess.Popen("TGBot.py")
         print("[System]: Telegram bot has been activated!")
 
     # Main loop
@@ -249,7 +251,7 @@ def main():
                             sock.sendall("$filereceived$".encode(ENCODE))
 
                             info_string = ""
-                            file = open("./n_FileToSend.dat", "r")
+                            file = open("n_FileToSend.dat", "r")
                             info_string = file.read()
                             file.close()
 
@@ -276,11 +278,15 @@ def main():
                     except:
                         traceback.print_exc()
                         continue
-    except KeyboardInterrupt:
-        # Cleaning everything in case of keyboard interruption
-        break_connection(server_socket)
+    except:
+        # Cleaning everything
+        try:
+            break_connection(server_socket)
+        except:
+            pass
         if len(sys.argv) > 1 and sys.argv[1] == '--TGbot':
             TGBot.kill()
+        os.remove("n_FileToSend.dat")
 
 if __name__ == '__main__':
     main()

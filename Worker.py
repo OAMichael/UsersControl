@@ -23,11 +23,15 @@ SOCKET_TIMEOUT = 5
 
 # ----------------------------------------------- Info about processes -----------------------------------------------
 def get_processes_info():
-    info_string = ""
+    info_string = "NEW_INFO\n"
     processes = []
+    global window_pids
     for process in psutil.process_iter():
         # get all process info in one shot
         with process.oneshot():
+            # Obtain information only about processes of windows
+            if process.pid not in window_pids:
+                continue
 
             # get the name of the process executed
             name = process.name()
@@ -63,7 +67,7 @@ def get_processes_info():
     info_string += "NEW_INFO\n"
     info_string += str(len(processes)) + "\n"
 
-    file = open("./FileToSend.dat", "w")
+    file = open("./FileToSend.dat", "a")
     file.write(info_string)
     file.close()
 
@@ -102,14 +106,21 @@ def get_winlist():
 
 # ------------------------------------------------ Info about windows ------------------------------------------------
 def get_win_info():
-    info_string = "NEW_INFO\n"
+    info_string = ""
+    global window_pids
+    # Create an object of Xdo and then acquire information
+    xdo = Xdo()
 
     wlist = get_winlist()
     for w in wlist:
         info_string += w.get_name() + "\n"
-
-    # Create an object of Xdo and then acquire information
-    xdo = Xdo()
+        new_name = w.get_name().encode()
+        new_windows = xdo.search_windows(winname=new_name)
+        if new_windows:
+            for window in new_windows:
+                new_pid = xdo.get_pid_window(window)
+                if new_pid != 0 and new_pid not in window_pids: 
+                    window_pids.append(new_pid)
 
     # Active window
     try:
@@ -161,19 +172,20 @@ def get_win_info():
     except:
         pass
 
-    file = open("./FileToSend.dat", "a")
+    file = open("./FileToSend.dat", "w")
     file.write(info_string)
     file.close()
 
 
 # function with obtaining all info
 def main_iteration():
+#--------------------------------------------- Windows info ---------------------------------------------#
+    get_win_info()
 #-------------------------------------------- Processes info --------------------------------------------#
     get_processes_info()
 #--------------------------------------- System and computer info ---------------------------------------#
     get_integral_info()
-#--------------------------------------------- Windows info ---------------------------------------------#
-    get_win_info()
+
 
 
 def main():
@@ -187,6 +199,9 @@ def main():
     worker = TcpClient(host, port)
 
     warnings.filterwarnings("ignore")
+
+    global window_pids
+    window_pids = []
 
     # dictionary with {"[window name] : [activity percentage]"}
     global win_activ    
@@ -204,12 +219,14 @@ def main():
         while True:
             loop_times += 1
             main_iteration()
-            file = open("./FileToSend.dat", "rb")
-            worker.sendfile("./FileToSend.dat", file)
+            file = open("FileToSend.dat", "rb")
+            worker.sendfile("FileToSend.dat", file)
             file.close()
             time.sleep(5)
 
-    except KeyboardInterrupt:
+    except:
+        print("Closing connection...")
+        os.remove("FileToSend.dat")
         pass
 
 if __name__ == '__main__':
