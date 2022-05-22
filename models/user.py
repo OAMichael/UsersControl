@@ -5,17 +5,17 @@ class User(Base):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
-    #TODO: сделать ограничение на длину имени
-    #TODO: указать, что это поле не должно быть пустым
-    name = Column(String)
-    computer = Column(Integer, ForeignKey('computers.number'))
+    name = Column(String(32), nullable=True)
+    computer = Column(Integer, ForeignKey('computers.number'), nullable=True)
+    ip_addr = Column(String(len('000.000.0.000')))
 
-    def __init__(self, name: str, computer_id: int):
+    def __init__(self, name: str, computer_id: int, ip_addr = ''):
         self.name = name
         self.computer = computer_id
+        self.ip_addr = ip_addr
 
     def __repr__(self) -> str:
-        info = f'USER: [NAME: {self.name}] [COMPUTER: {self.computer}]'
+        info = f'USER: [NAME: {self.name}] [COMPUTER: {self.computer}] [IP: {self.ip_addr}]'
         return info
 
     def __eq__(self, other):

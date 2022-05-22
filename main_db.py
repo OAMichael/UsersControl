@@ -12,16 +12,21 @@ if __name__ == '__main__':
     
     db_existed = os.path.exists(DATABASE_NAME)
     if not db_existed:
-        db_creator.create_database()
+        db_creator.create_database(True)
 
     '''Your code here'''
 
-    # DB_access.AddApplication(Session(), 'ddd', 4)
-    # DB_access.TakeAppsList(Session(), 'Евпраксия Борисовна Панова')
+    DB_access.PrintComputerInfo(Session(), 'Калашникова Лариса Семеновна')
+    print('*' * 100)
+    for it in DB_access.TakeUsesr(Session()):
+        print(it)
+    print('*' * 100)
+    DB_access.AuthorisationTime(Session())
+    print('*' * 100)
+    DB_access.ExitTime(Session())
+    print('*' * 100)
+    DB_access.TakeAppsList(Session(), 'Савин Григорий Еремеевич')
 
-    list1, list2 = DB_access.MostUsasbleWindows(Session(), 'Ратибор Даниилович Фокин')
-    print(list1)
-    print(list2)
 
 # посмотреть табличку в приложении
 #* sqlitebrowser test.s3db
