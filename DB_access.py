@@ -45,7 +45,7 @@ def TakeUsesr(session: Session):
 
 '''
 дообавляем запись о компьютере под номером comp
-информация передается в кортеже, который имеет следующую стуктуру
+информация передается в словаре, который имеет следующую стуктуру
 
 название окна первого приоритета (str)
 название окна второго приоритета (str)
@@ -63,7 +63,21 @@ Total memory used (float)
 Текущая дата и время (указывается через datetime.datetime.now())
 
 Пример:
-info = ('YouTube', 'VK', 'bash', 70, 20, 10, 200, 1.1, 20, 20, 20, 'boot time', 1.2, datetime.datetime.now())
+info = {
+    'first_window' : 'YouTube', 
+    'second_window' : 'VK', 
+    'third_window' : 'bash', 
+    'first_window_percent' : 70, 
+    'second_window_percent' : 20, 
+    'third_window_percent' : 10, 
+    'proc_number' : 200, 
+    'disk_mem_usege' : 1.1, 
+    'CPU_f_min' : 20, 
+    'CPU_f_max' : 20, 
+    'CPU_f_cur' : 20, 
+    'Boot_time' : 'boot time', 
+    'Total_mem_used' : 1.2
+    }
 '''
 def AddComputerInfo(session: Session, comp: int, info: tuple):
     computer_number_list = [computer.number for computer in session.query(Computer)]
@@ -72,24 +86,24 @@ def AddComputerInfo(session: Session, comp: int, info: tuple):
         raise RuntimeError
 
     computer = Computer(comp)
-    computer.first_window = info[0]
-    computer.second_window = info[1]
-    computer.third_window = info[2]
+    computer.first_window = info['first_window']
+    computer.second_window = info['second_window']
+    computer.third_window = info['third_window']
 
-    computer.first_window_percent = info[3]
-    computer.second_window_percent = info[4]
-    computer.third_window_percent = info[5]
+    computer.first_window_percent = info['first_window_percent']
+    computer.second_window_percent = info['second_window_percent']
+    computer.third_window_percent = info['third_window_percent']
 
-    computer.proc_number = info[6]
+    computer.proc_number = info['proc_number']
 
-    computer.disk_mem_usege = info[7]
+    computer.disk_mem_usege = info['disk_mem_usege']
 
-    computer.CPU_f_min = info[8]
-    computer.CPU_f_max = info[9]
-    computer.CPU_f_cur = info[10]
-    computer.Boot_time = info[11]
-    computer.Total_mem_used = info[12]
-    computer.date = info[13]
+    computer.CPU_f_min = info['CPU_f_min']
+    computer.CPU_f_max = info['CPU_f_max']
+    computer.CPU_f_cur = info['CPU_f_cur']
+    computer.Boot_time = info['Boot_time']
+    computer.Total_mem_used = info['Total_mem_used']
+    computer.date = datetime.now()
 
     session.add(computer)
     session.commit()
@@ -125,6 +139,12 @@ app_info = {
 }
 '''
 def AddApplication(session: Session, app_info: dict):
+
+    computers = [comp.number for comp in session.query(Computer)]
+    if app_info['computer'] not in computers:
+        print('You try to add application for computer [№ %d], that is not exist' %app_info['computer'])
+        raise RuntimeError
+
     # поучаем список все существующих приложений
     apps = session.query(Application)
     # создаем прообраз нового приложения
