@@ -8,6 +8,12 @@ from datetime import datetime
 
 # дает полную информацию о компьютере по имени пользователя
 def PrintComputerInfo(session: Session, name: str):
+
+    users = TakeUsers(session)
+    if name not in users:
+        print('there is no such user')
+        raise RuntimeError
+
     for it in session.query(Computer).join(User).filter(User.name == name):
         print(it)
 
@@ -65,6 +71,7 @@ info = {
     'first_window_percent' : 70, 
     'second_window_percent' : 20, 
     'third_window_percent' : 10, 
+    'curent_window_active' : 'VK',
     'proc_number' : 200, 
     'disk_mem_usege' : 1.1, 
     'CPU_f_min' : 20, 
@@ -88,6 +95,7 @@ def AddComputerInfo(session: Session, comp: int, info: dict):
     computer.first_window_percent = info['first_window_percent']
     computer.second_window_percent = info['second_window_percent']
     computer.third_window_percent = info['third_window_percent']
+    computer.curent_window_active = info['curent_window_active']
 
     computer.proc_number = info['proc_number']
 
@@ -187,6 +195,10 @@ def ExitTime(session: Session):
 '''
 def TakeAppsList(session: Session, user_name: str):
     comp = [user.computer for user in session.query(User).filter(User.name == user_name)]
+
+    if not comp:
+        print('there is not such user')
+        raise RuntimeError
 
     print("USER: " + user_name + "\nCOMPUTER: %d\n" %comp[0])
     for it in session.query(Application).filter(Application.computer == comp[0]):
