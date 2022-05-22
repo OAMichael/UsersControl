@@ -144,14 +144,3 @@ if __name__ == "__main__":
     FileServer = TcpServer(port, quantity, host)
     FileServer.serve()
 
-
-
-
-
-
-
-
-
-
-
-

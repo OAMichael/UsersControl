@@ -176,7 +176,7 @@ def main():
         CreateDB.create_database(False)
 
     # Does not wait, but we don't need to, because kill it while closing connection
-    if len(sys.argv) > 1 and sys.argv[1] == '--TGbot':
+    if '--TGbot' in sys.argv:
         global TGBot
         TGBot = subprocess.Popen("./TGBot.py")
         print("[System]: Telegram bot has been activated!")
@@ -285,7 +285,7 @@ def main():
             break_connection(server_socket)
         except:
             pass
-        if len(sys.argv) > 1 and sys.argv[1] == '--TGbot':
+        if '--TGbot' in sys.argv:
             TGBot.kill()
         if os.path.isfile("n_FileToSend.dat"):
             os.remove("n_FileToSend.dat")
