@@ -7,15 +7,15 @@ from models.computer import Computer
 from datetime import datetime
 
 # дает полную информацию о компьютере по имени пользователя
-def PrintComputerInfo(session: Session, name: str):
+def GetComputerInfo(session: Session, name: str) -> Computer:
 
-    users = TakeUsers(session)
+    users = GetUsers(session)
     if name not in users:
         print('there is no such user')
         raise RuntimeError
 
-    for it in session.query(Computer).join(User).filter(User.name == name):
-        print(it)
+    user_computer_history = session.query(Computer).join(User).filter(User.name == name)
+    return user_computer_history[-1]
 
 # добавляет нового юзера и компьютер, соответствующий ему
 def AddUser(session: Session, name: str, comp: int, ip: str):
@@ -39,7 +39,7 @@ def AddUser(session: Session, name: str, comp: int, ip: str):
     session.close()
 
 # возвращает текущий список пользователей
-def TakeUsers(session: Session):
+def GetUsers(session: Session) -> list:
     users = session.query(User)
     users_names = [user.name for user in users]
     return users_names
@@ -169,47 +169,54 @@ def AddApplication(session: Session, app_info: dict):
 '''
 выводит время авторизации каждого пользователя
 '''
-def AuthorisationTime(session: Session):
-    users = TakeUsers(session)
+def GetAuthorisationTime(session: Session) -> dict:
+    users = GetUsers(session)
+
+    time = {}
 
     for user in users:
         first_post = session.query(Computer).join(User).filter(User.name == user).first()
         authorisation_time = first_post.date.strftime("%d-%m-%Y %H:%M:%S")
-        print("USER: " + user + " -- AUTHORASION TIME: " + authorisation_time)
+        time[user] = authorisation_time
+    return time
 
 '''
 выводит время последней активности каждого пользователя
 '''
-def ExitTime(session: Session):
-    users = TakeUsers(session)
+def GetExitTime(session: Session) -> dict:
+    users = GetUsers(session)
+    time = {}
 
     for user in users:
         computer_date = [computer.date 
                          for computer in 
                          session.query(Computer).join(User).filter(User.name == user)]
         exit_time = computer_date[-1].strftime("%d-%m-%Y %H:%M:%S")
-        print("USER: " + user + " -- EXIT TIME: " + exit_time)
+        time[user] = exit_time
+    return time
 
 '''
 функцию возвращает список приложений по имени юзера
 '''
-def TakeAppsList(session: Session, user_name: str):
+def GetAppsList(session: Session, user_name: str) -> list:
     comp = [user.computer for user in session.query(User).filter(User.name == user_name)]
 
     if not comp:
         print('there is not such user')
         raise RuntimeError
 
-    print("USER: " + user_name + "\nCOMPUTER: %d\n" %comp[0])
+    app_list = []
     for it in session.query(Application).filter(Application.computer == comp[0]):
-        print(it)
+        app_list.append(it.app_name)
+    
+    return app_list
 
 ''' 
 по заданному имени пользователя возвращает 2 списка:
 первый список (с нулевого индекса) окна первого, второго и третьего приоритета
 второй список -- их процентное соотношение по времени
 '''
-def MostUsableWindows(session: Session, user_name: str):
+def GetMostUsableWindows(session: Session, user_name: str):
     comp = session.query(Computer).join(User).filter(User.name == user_name)
     cur_comp = comp[-1]
 
