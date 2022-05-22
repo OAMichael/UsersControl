@@ -5,6 +5,8 @@ from models.applications import Application
 from models.user import User
 from models.computer import Computer
 
+import DB_access
+
 import datetime
 
 # вызываем функцию создания базы данных с опцией автоматического заполнения
@@ -36,16 +38,66 @@ def _load_fake_data(session: Session):
     application_list = ['bash', 'chrom', 'telegram', 'YouTube', 'VScode', 'Tex']
 
     for key, app in enumerate(application_list):
-        application = Application(app)
-
         if key % 2 == 0:
-            application.computers.append(computer1)
+            app_info = {
+                'app_name': app,
+                'computer': computer1.number,
+                'create_time': '01-01-01',
+                'status': 'active',
+                'rss': 0,
+                'rms': 0,
+                'shared': 0,
+                'data': 0
+            }
+            DB_access.AddApplication(Session(), app_info)
         if key % 3 == 0:
-            application.computers.append(computer2)
+            app_info = {
+                'app_name': app,
+                'computer': computer2.number,
+                'create_time': '01-01-01',
+                'status': 'active',
+                'rss': 0,
+                'rms': 0,
+                'shared': 0,
+                'data': 0
+            }
+            DB_access.AddApplication(Session(), app_info)
         if key % 4 == 0:
-            application.computers.append(computer3)
+            app_info = {
+                'app_name': app,
+                'computer': computer3.number,
+                'create_time': '01-01-01',
+                'status': 'active',
+                'rss': 0,
+                'rms': 0,
+                'shared': 0,
+                'data': 0
+            }
+            DB_access.AddApplication(Session(), app_info)
         if key % 5 == 0:
-            application.computers.append(computer4)
+            app_info = {
+                'app_name': app,
+                'computer': computer4.number,
+                'create_time': '01-01-01',
+                'status': 'active',
+                'rss': 0,
+                'rms': 0,
+                'shared': 0,
+                'data': 0
+            }
+            DB_access.AddApplication(Session(), app_info)
+
+
+    #     application = Application(app)
+
+    #     if key % 2 == 0:
+    #         application.computers.append(computer1)
+    #     if key % 3 == 0:
+    #         application.computers.append(computer2)
+    #     if key % 4 == 0:
+    #         application.computers.append(computer3)
+    #     if key % 5 == 0:
+    #         application.computers.append(computer4)
 
     session.commit()
 

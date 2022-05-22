@@ -1,8 +1,10 @@
 from sqlalchemy import and_
 from models.Database import Session
-from models.applications import Application, assotiated_table
+from models.applications import Application
 from models.user import User
 from models.computer import Computer
+
+from datetime import datetime
 
 # дает полную информацию о компьютере по имени пользователя
 def PrintComputerInfo(session: Session, name: str):
@@ -95,21 +97,61 @@ def AddComputerInfo(session: Session, comp: int, info: tuple):
 
 '''
 Добавляет новое приложение в таблицу приложений, если его там не было
+В аргументы функции передается словарь с информацией о приложении
+Словарь имеет следующую структуру:
+
+app_info = {
+    'app_name': имя приложения,
+    'computer': компьютер на котором было открыто приложение,
+    'createtime': время создания,
+    'status': статус работы,
+    'rss': rss,
+    'rms': rms,
+    'shared': shared,
+    'data': data
+}
+
+Пример:
+
+app_info = {
+    'app_name': 'YouTube',
+    'computer': 4,
+    'create_time': '01-01-01',
+    'status': 'active',
+    'rss': 0,
+    'rms': 0,
+    'shared': 0,
+    'data': 0
+}
 '''
-def AddApplication(session: Session, app: str, comp: int):
+def AddApplication(session: Session, app_info: dict):
+    # поучаем список все существующих приложений
     apps = session.query(Application)
-    new_app = Application(app)
+    # создаем прообраз нового приложения
+    new_app = Application(app_info['app_name'], app_info['computer'])
 
-    if new_app not in apps:
-        session.add(new_app)
+    new_app.create_time = app_info['create_time']
+    new_app.status = app_info['status']
+    new_app.rss = app_info['rss']
+    new_app.rms = app_info['rms']
+    new_app.shared = app_info['shared']
+    new_app.data = app_info['data']
+    new_app.date = datetime.now()
 
-        computer = session.query(Computer).filter(Computer.number == comp)
-        cur_computer = computer[-1]
-        new_app.computers.append(cur_computer)
-        session.commit()
 
-    else:
-        print('this application is already in database')
+    session.add(new_app)
+    session.commit()
+    # если такого приложения еще нет в системе -- добавляем его
+    # if new_app not in apps:
+        # session.add(new_app)
+
+        # computer = session.query(Computer).filter(Computer.number == app_info[1])
+        # cur_computer = computer[-1]
+        # new_app.computers.append(cur_computer)
+        # session.commit()
+
+    # else:
+        # print('this application is already in database')
 
 '''
 выводит время авторизации каждого пользователя
@@ -143,10 +185,13 @@ def TakeAppsList(session: Session, user_name: str):
     comp = [user.computer for user in session.query(User).filter(User.name == user_name)]
 
     print("USER: " + user_name + "\nCOMPUTER: %d\n" %comp[0])
-    for it, _ in session.query(Application.app_name, Computer.number).filter(and_(
-        assotiated_table.c.application_id == Application.id, 
-        assotiated_table.c.computer_id == Computer.id, 
-        Computer.number == comp[0])):
+    # for it, _ in session.query(Application.app_name, Computer.number).filter(and_(
+    #     assotiated_table.c.application_id == Application.id, 
+    #     assotiated_table.c.computer_id == Computer.id, 
+    #     Computer.number == comp[0])):
+    #     print(it)
+
+    for it in session.query(Application).filter(Application.computer == comp):
         print(it)
 
 ''' 
