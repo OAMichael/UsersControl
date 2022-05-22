@@ -16,6 +16,7 @@ class Computer(Base):
     first_window_percent = Column(Float)
     second_window_percent = Column(Float)
     third_window_percent = Column(Float)
+    curent_window_active = Column(String(32))
 
     proc_number = Column(Integer)
     disk_mem_usege = Column(Float)
@@ -35,6 +36,7 @@ class Computer(Base):
         self.first_window_percent = 0
         self.second_window_percent = 0
         self.third_window_percent = 0
+        self.curent_window_active = ''
 
         self.proc_number = 0
         self.disk_mem_usege = 0
@@ -52,7 +54,8 @@ class Computer(Base):
                     [NUMBER: {self.number}]\n \
                     [FIRST WINDOW: {self.first_window} ({self.first_window_percent} %)]\n \
                     [SECOND WINDOW: {self.second_window} ({self.second_window_percent} %)]\n \
-                    [THIRD WINDOW: {self.third_window} ({self.third_window_percent} %)]\n\n \
+                    [THIRD WINDOW: {self.third_window} ({self.third_window_percent} %)]\n \
+                    [CURRENT ACTIVE WINDOW: {self.curent_window_active}]\n\n \
                     [PROCESS NUMBER: {self.proc_number}]\n \
                     [DISK MEMORY USAGE: {self.disk_mem_usege}]\n \
                     [CPU FREUENCY (MIN): {self.CPU_f_min}]\n \

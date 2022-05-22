@@ -37,6 +37,7 @@ def _load_fake_data(session: Session):
             'first_window_percent' : 70, 
             'second_window_percent' : 20, 
             'third_window_percent' : 10, 
+            'curent_window_active' : 'VK',
             'proc_number' : 200, 
             'disk_mem_usege' : 1.1, 
             'CPU_f_min' : 20, 
