@@ -26,29 +26,8 @@ def _load_fake_data(session: Session):
         comp = _
 
         DB_access.AddUser(Session(), name, comp, '')
-
-    # computer1 = Computer(1)
-    # computer2 = Computer(2)
-    # computer3 = Computer(3)
-    # computer4 = Computer(4)
-    # computer5 = Computer(5)
-    # computer6 = Computer(6)
-    # computer7 = Computer(7)
-    # computer8 = Computer(8)
-
-    # session.add(computer1)
-    # session.add(computer2)
-    # session.add(computer3)
-    # session.add(computer4)
-    # session.add(computer5)
-    # session.add(computer6)
-    # session.add(computer7)
-    # session.add(computer8)
-
-    # session.commit()
     
     application_list = ['bash', 'chrom', 'telegram', 'YouTube', 'VScode', 'Tex']
-    # computer_list = [computer1, computer2, computer3, computer4, computer5, computer6, computer7, computer8]
     
     for it in range(1, 8+1):
         info = {
@@ -117,18 +96,3 @@ def _load_fake_data(session: Session):
                 'data': 0
             }
             DB_access.AddApplication(Session(), app_info)
-
-
-    #     application = Application(app)
-
-    #     if key % 2 == 0:
-    #         application.computers.append(computer1)
-    #     if key % 3 == 0:
-    #         application.computers.append(computer2)
-    #     if key % 4 == 0:
-    #         application.computers.append(computer3)
-    #     if key % 5 == 0:
-    #         application.computers.append(computer4)
-    
-    # session.commit()
-    # session.close()

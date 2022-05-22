@@ -4,12 +4,6 @@ from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import relationship
 from models.Database import Base
 
-# вспомогательная таблица, которая используется для определения связей "Многие ко многим"
-# assotiated_table = Table('assotioation', Base.metadata,
-#                                          Column('application_id', Integer, ForeignKey('applications.id')),
-#                                          Column('computer_id', Integer, ForeignKey('computers.number'))
-#                                          )
-
 class Application(Base):
     __tablename__ = 'applications'
 
@@ -24,8 +18,6 @@ class Application(Base):
     shared = Column(Integer)
     data = Column(Integer)
     date = Column(DateTime)
-
-    # computers = relationship('Computer', secondary=assotiated_table, backref='group_lesson')
 
     def __init__(self, app_name: str, comp: int):
         self.app_name = app_name

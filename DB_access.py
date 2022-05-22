@@ -11,11 +11,6 @@ def PrintComputerInfo(session: Session, name: str):
     for it in session.query(Computer).join(User).filter(User.name == name):
         print(it)
 
-# выводит список всех пользователей, чей Total_mem_used превышает заданное значение
-# def UserMemoryUsedFilter(session: Session, MemoryUsed: float):
-#     for it in session.query(User).join(Computer).filter(Computer.Total_mem_used >= MemoryUsed):
-#         print(it)
-
 # добавляет нового юзера и компьютер, соответствующий ему
 def AddUser(session: Session, name: str, comp: int, ip: str):
     new_user = User(name, comp, ip)
@@ -161,17 +156,6 @@ def AddApplication(session: Session, app_info: dict):
 
     session.add(new_app)
     session.commit()
-    # если такого приложения еще нет в системе -- добавляем его
-    # if new_app not in apps:
-        # session.add(new_app)
-
-        # computer = session.query(Computer).filter(Computer.number == app_info[1])
-        # cur_computer = computer[-1]
-        # new_app.computers.append(cur_computer)
-        # session.commit()
-
-    # else:
-        # print('this application is already in database')
 
 '''
 выводит время авторизации каждого пользователя
@@ -201,17 +185,10 @@ def ExitTime(session: Session):
 функцию возвращает список приложений по имени юзера
 '''
 def TakeAppsList(session: Session, user_name: str):
-
     comp = [user.computer for user in session.query(User).filter(User.name == user_name)]
 
     print("USER: " + user_name + "\nCOMPUTER: %d\n" %comp[0])
-    # for it, _ in session.query(Application.app_name, Computer.number).filter(and_(
-    #     assotiated_table.c.application_id == Application.id, 
-    #     assotiated_table.c.computer_id == Computer.id, 
-    #     Computer.number == comp[0])):
-    #     print(it)
-
-    for it in session.query(Application).filter(Application.computer == comp):
+    for it in session.query(Application).filter(Application.computer == comp[0]):
         print(it)
 
 ''' 
