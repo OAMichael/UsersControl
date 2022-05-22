@@ -16,12 +16,17 @@ def main():
     # Lists of active windows and their percentage
     win_list, percent_list = DB_access.MostUsableWindows(DB_access.Session(), name)
 
-    for win in win_list:
-        if percent_list[win_list.index(win)] == 0:
-            del percent_list[win_list.index(win)]
-            del win_list[win_list.index(win)]
-        else:
-            win_list[win_list.index(win)] = (win[:16] + '...' + win[-16:]) if len(win) > 35 else win
+    deleted_i = []
+    for i in range(3):
+        if percent_list[i] == 0.00:
+            deleted_i.insert(0, i)
+
+    for i in deleted_i:
+        del win_list[i]
+        del percent_list[i]
+
+    for i in range(len(win_list)):
+        win_list[i] = (win_list[i][:16] + '...' + win_list[i][-16:]) if len(win_list[i]) > 35 else win_list[i]
 
     # Preparing for dataframe
     data = {"Windows":    win_list,
