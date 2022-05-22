@@ -7,12 +7,12 @@ class Computer(Base):
     __tablename__ = 'computers'
 
     id = Column(Integer, primary_key=True)
-    number = Column(Integer)
+    number = Column(Integer, nullable=True)
     user = relationship('User')
 
-    first_window = Column(String)
-    second_window = Column(String)
-    third_window = Column(String)
+    first_window = Column(String(32))
+    second_window = Column(String(32))
+    third_window = Column(String(32))
     first_window_percent = Column(Float)
     second_window_percent = Column(Float)
     third_window_percent = Column(Float)

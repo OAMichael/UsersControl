@@ -8,11 +8,11 @@ class Application(Base):
     __tablename__ = 'applications'
 
     id = Column(Integer, primary_key=True)
-    app_name = Column(String)
-    computer = Column(Integer)
+    app_name = Column(String(32), nullable=True)
+    computer = Column(Integer, nullable=True)
 
     create_time = Column(String)
-    status = Column(String)
+    status = Column(String(16))
     rss = Column(Integer)
     rms = Column(Integer)
     shared = Column(Integer)

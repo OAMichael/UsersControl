@@ -16,5 +16,17 @@ if __name__ == '__main__':
 
     '''Your code here'''
 
+    DB_access.PrintComputerInfo(Session(), 'Калашникова Лариса Семеновна')
+    print('*' * 100)
+    for it in DB_access.TakeUsesr(Session()):
+        print(it)
+    print('*' * 100)
+    DB_access.AuthorisationTime(Session())
+    print('*' * 100)
+    DB_access.ExitTime(Session())
+    print('*' * 100)
+    DB_access.TakeAppsList(Session(), 'Савин Григорий Еремеевич')
+
+
 # посмотреть табличку в приложении
 #* sqlitebrowser test.s3db

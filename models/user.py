@@ -5,11 +5,9 @@ class User(Base):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
-    #TODO: сделать ограничение на длину имени
-    #TODO: указать, что это поле не должно быть пустым
-    name = Column(String)
-    computer = Column(Integer, ForeignKey('computers.number'))
-    ip_addr = Column(String)
+    name = Column(String(32), nullable=True)
+    computer = Column(Integer, ForeignKey('computers.number'), nullable=True)
+    ip_addr = Column(String(len('000.000.0.000')))
 
     def __init__(self, name: str, computer_id: int, ip_addr = ''):
         self.name = name
