@@ -14,7 +14,7 @@ def main():
     # Get information about what we are going to graph
     name = argv[1]
     # Lists of active windows and their percentage
-    win_list, percent_list = DB_access.MostUsableWindows(DB_access.Session(), name)
+    win_list, percent_list = DB_access.GetMostUsableWindows(DB_access.Session(), name)
 
     deleted_i = []
     for i in range(3):

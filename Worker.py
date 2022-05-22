@@ -82,8 +82,8 @@ def get_integral_info():
     boot_time = datetime.fromtimestamp(psutil.boot_time())
 
 
-    info = {'Disk memory usage':  str(psutil.disk_usage('/').percent), 'CPU frequency(min)': str(cpu_freq.min),
-            'CPU frequency(max)': str(cpu_freq.max), 'CPU frequency(current)': str(cpu_freq.current), 
+    info = {'Disk memory usage':  str(psutil.disk_usage('/').percent), 'CPU frequency(min)': '{:0.2f}'.format(cpu_freq.min, 2),
+            'CPU frequency(max)': '{:0.2f}'.format(cpu_freq.max, 2), 'CPU frequency(current)': '{:0.2f}'.format(cpu_freq.current, 2), 
             'Boot time': boot_time, 'Total memory used': str(psutil.virtual_memory().percent)}
 
     for inf in info:

@@ -41,7 +41,7 @@ def button(update: Update, context: CallbackContext):
 
 def ReadNames():
     global workers_list
-    workers_list = DB_access.TakeUsers(DB_access.Session())
+    workers_list = DB_access.GetUsers(DB_access.Session())
 
 
 def worker_info(worker, update: Update, context: CallbackContext):
@@ -51,11 +51,18 @@ def worker_info(worker, update: Update, context: CallbackContext):
         update.message.reply_text("There is no such worker")
         return
 
-    Text = f"Worker name: " + worker
+    Text = f"*Worker name:* {worker}\n" 
 
-    DB_access.PrintComputerInfo(DB_access.Session(), worker)
+    CompInfo = DB_access.GetComputerInfo(DB_access.Session(), worker)
+    Text += f"*Computer number:* {CompInfo.number}\n"
+    Text += f"*Active window:* {CompInfo.curent_window_active}\n" 
+    Text += f"*Number of processes:* {CompInfo.proc_number}\n"
+    Text += f"*Disk memory usage:* {CompInfo.disk_mem_usege}%\n"
+    Text += f"*CPU frequency: current:* {CompInfo.CPU_f_cur} MHz, min: {CompInfo.CPU_f_min} MHz, max: {CompInfo.CPU_f_max} MHz\n"
+    Text += f"*System boot time:* {CompInfo.Boot_time}\n"
+    Text += f"*Total memory used:* {CompInfo.Total_mem_used}%\n"
 
-    update.message.reply_text(Text)
+    update.message.reply_text(Text, parse_mode='Markdown')
 
     # Automatically waits
     plot = subprocess.run(["./Plot.py", worker])
