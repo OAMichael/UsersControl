@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 
-from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QTableWidget, QVBoxLayout, QHBoxLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QTableWidget, QVBoxLayout
 from PyQt5.QtWidgets import QTableWidgetItem, QTableView, QComboBox, QStackedLayout
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery, QSqlQueryModel
+from PyQt5.QtCore import Qt
 import sys
 
 
@@ -77,7 +78,7 @@ class MainWindow(QMainWindow):
         self.resize(1600, 900)
         
         pagelayout = QVBoxLayout()
-        button_layout = QHBoxLayout()
+        button_layout = QVBoxLayout()
         self.stacklayout = QStackedLayout()
 
         pagelayout.addLayout(button_layout)
@@ -106,10 +107,15 @@ class MainWindow(QMainWindow):
     def turn_table(self, i):
         self.stacklayout.setCurrentIndex(i)
 
+    def keyPressEvent(self, event):
+        key = event.key()
+        if key == Qt.Key.Key_Escape:
+            self.close()
+
+
 
 def main():
     app = QApplication(sys.argv)
-    global con
     con = QSqlDatabase.addDatabase("QSQLITE")
     con.setDatabaseName("worker_base.sqlite")
     if not con.open():
@@ -119,7 +125,6 @@ def main():
     base = MainWindow()
     base.setWindowTitle("Workers")
     base.show()   
-    app.exit()
     sys.exit(app.exec_())
     con.close()
 
