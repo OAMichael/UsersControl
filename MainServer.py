@@ -34,11 +34,14 @@ def disconnect_client(user):
     if user in connection_list:
         index = connection_list.index(user)
         connection_list.remove(user)
+        nick = nicknames[index]
+        addr = addresses[index]
         del nicknames[index]
         del addresses[index]
         try:
             user.shutdown(socket.SHUT_RDWR)
             user.close()
+            print(f"[System]: Disconnected: ({nick}, {addr})")
         except Exception as e:
             if e.errno == 57:
                 pass
@@ -129,8 +132,8 @@ def break_connection(server_socket):
 
 def main():
     # First of all, configurate the server
-    host = '192.168.0.105'
-    port = 55555
+    host = str(input("Enter main server host: "))
+    port = int(input("Enter port: "))
 
     # AF_INET - internet socket, SOCK_STREAM - connection-based protocol for TCP, 
     # IPPROTO_TCP - choosing TCP
@@ -209,7 +212,7 @@ def main():
                     try:
                         DB_access.AddUser(DB_access.Session(), nick, nicknames.index(nick) - 1, f"{address}")
                     except:
-                        pass
+                        disconnect_client(client)
 
                 # But if we got a data from stdin, it's likely to be message to break connection
                 elif sock == sys.stdin:
