@@ -1,133 +1,85 @@
 #!/usr/bin/python3
 
-from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QTableWidget, QVBoxLayout
-from PyQt5.QtWidgets import QTableWidgetItem, QTableView, QComboBox, QStackedLayout
-from PyQt5.QtSql import QSqlDatabase, QSqlQuery, QSqlQueryModel
-from PyQt5.QtCore import Qt
+import os.path as op
+import sqlite3
 import sys
 
+from PyQt5.QtCore import Qt
+from PyQt5.QtSql import QSqlDatabase, QSqlQuery, QSqlQueryModel
+from PyQt5.QtWidgets import QApplication, QTableWidgetItem
+from PyQt5 import uic
 
-class Users(QWidget):
-    def __init__(self):
-        super(Users, self).__init__()
+def res_path(res_name):
+    return op.join(op.dirname(__file__), res_name)
+
+MainFormUI, MainForm = uic.loadUiType(res_path('Base.ui'))
+
+class MainWindow(MainForm):
+    def __init__(self, parent=None):
+        # Initialize base form:
+        super().__init__()
+        # Create and initialize UI elements:
+        self.ui = MainFormUI()
+        self.ui.setupUi(self)
+        self.con = QSqlDatabase.addDatabase("QSQLITE")
+        self.con.setDatabaseName("worker_base.sqlite")
+        if not self.con.open():
+            print("Unable to connect to the database")
+            sys.exit(1)
+
+        self.setWindowTitle("Workers")
         
-        # Set up the view and load the data
-        self.view = QTableWidget()
-        self.view.setColumnCount(4)
-        self.view.setHorizontalHeaderLabels(["ID", "Name", "Computer", "IP"])
         query = QSqlQuery("SELECT * FROM users")
         while query.next():
-            rows = self.view.rowCount()
-            self.view.setRowCount(rows + 1)
+            rows = self.ui.UsersTable.rowCount()
+            self.ui.UsersTable.setRowCount(rows + 1)
             for i in range(4):
-                self.view.setItem(rows, i, QTableWidgetItem(str(query.value(i))))
+                self.ui.UsersTable.setItem(rows, i, QTableWidgetItem(str(query.value(i))))
+        self.ui.UsersTable.resizeColumnsToContents()
+        for i in range(4):
+            self.ui.UsersTable.setSortingEnabled(True)
 
-        self.view.resizeColumnsToContents()
-
-
-class Computers(QWidget):
-    def __init__(self):
-        super(Computers, self).__init__()
-        
-        # Set up the view and load the data
-        self.view = QTableWidget()
-        self.view.setColumnCount(17)
-        self.view.setHorizontalHeaderLabels(["ID", "Computer", "Mostly used window", "Second mostly used window",
-                                             "Third mostly used window", "Mostly used window percent", 
-                                             "Second mostly used window percent", "Third mostly used window percent",
-                                             "Currently active window", "Number of opened windows", "Disk memory usage", 
-                                             "Min CPU frequency", "Max CPU frequency", "Current CPU frequency",
-                                             "System boot time", "Total memory used", "Timestamp"])
         query = QSqlQuery("SELECT * FROM computers")
         while query.next():
-            rows = self.view.rowCount()
-            self.view.setRowCount(rows + 1)
+            rows = self.ui.ComputersTable.rowCount()
+            self.ui.ComputersTable.setRowCount(rows + 1)
             for i in range(17):
-                new_info = str(query.value(i))
-                if (i > 4 and i < 8) or i == 10 or i == 15:
-                    new_info += "%"
-                elif i > 10 and i < 14:
-                    new_info += " MHz"
-                self.view.setItem(rows, i, QTableWidgetItem(new_info))
+                self.ui.ComputersTable.setItem(rows, i, QTableWidgetItem(str(query.value(i))))
+        self.ui.ComputersTable.resizeColumnsToContents()
+        for i in range(17):
+            self.ui.ComputersTable.setSortingEnabled(True)
 
-        self.view.resizeColumnsToContents()
-
-
-class Applications(QWidget):
-    def __init__(self):
-        super(Applications, self).__init__()
-        
-        # Set up the view and load the data
-        self.view = QTableWidget()
-        self.view.setColumnCount(10)
-        self.view.setHorizontalHeaderLabels(["ID", "Application name", "Computer", "Create time", "Status", 
-                                             "RSS memory", "VMS memory", "Shared memory", "Data memory", "Timestamp"])
         query = QSqlQuery("SELECT * FROM applications")
         while query.next():
-            rows = self.view.rowCount()
-            self.view.setRowCount(rows + 1)
+            rows = self.ui.ApplicationsTable.rowCount()
+            self.ui.ApplicationsTable.setRowCount(rows + 1)
             for i in range(10):
-                self.view.setItem(rows, i, QTableWidgetItem(str(query.value(i))))
+                self.ui.ApplicationsTable.setItem(rows, i, QTableWidgetItem(str(query.value(i))))
+        self.ui.ApplicationsTable.resizeColumnsToContents()
+        for i in range(10):
+            self.ui.ApplicationsTable.setSortingEnabled(True)
 
-        self.view.resizeColumnsToContents()
 
-
-class MainWindow(QMainWindow):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.resize(1600, 900)
-        
-        pagelayout = QVBoxLayout()
-        button_layout = QVBoxLayout()
-        self.stacklayout = QStackedLayout()
-
-        pagelayout.addLayout(button_layout)
-        pagelayout.addLayout(self.stacklayout)
-
-        button = QComboBox()
-        button.addItems(["Users", "Computers", "Applications"])
-
-        # Sends the current index (position) of the selected item.
-        button.currentIndexChanged.connect(self.turn_table)
-        button_layout.addWidget(button)
-
-        self.users_table = Users()
-        self.stacklayout.addWidget(self.users_table.view)
-
-        self.computers_table = Computers()
-        self.stacklayout.addWidget(self.computers_table.view)
-
-        self.applications_table = Applications()
-        self.stacklayout.addWidget(self.applications_table.view)
-
-        widget = QWidget()
-        widget.setLayout(pagelayout)
-        self.setCentralWidget(widget)
-
-    def turn_table(self, i):
-        self.stacklayout.setCurrentIndex(i)
+    def __del__(self):
+        # Destroy reference to UI object:
+        self.con.close()
+        self.ui = None
 
     def keyPressEvent(self, event):
         key = event.key()
-        if key == Qt.Key.Key_Escape:
-            self.close()
-
-
+        if key == Qt.Key_Escape:
+            try:
+                self.con.close()
+            except:
+                pass
+            sys.exit(1)
+            
 
 def main():
     app = QApplication(sys.argv)
-    con = QSqlDatabase.addDatabase("QSQLITE")
-    con.setDatabaseName("worker_base.sqlite")
-    if not con.open():
-        print("Unable to connect to the database")
-        sys.exit(1)
-
-    base = MainWindow()
-    base.setWindowTitle("Workers")
-    base.show()   
+    window = MainWindow()
+    window.show()
     sys.exit(app.exec_())
-    con.close()
 
-
-if __name__ == "__main__":
-	main()
+if __name__ == '__main__':
+    main()
