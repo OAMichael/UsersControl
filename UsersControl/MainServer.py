@@ -131,9 +131,20 @@ def break_connection(server_socket):
 
 
 def main():
+    if len(sys.argv) < 2:
+        print(f"Usage: {sys.argv[0]} [config_path]")
+        sys.exit(1)
     # First of all, configurate the server
-    host = str(input("Enter main server host: "))
-    port = int(input("Enter port: "))
+
+    # sys.argv[1] - it's config path
+    with open(sys.argv[1], "r") as file:
+        host = file.readline().strip("\n").split("host = ")[1]
+        port = int(file.readline().strip("\n").split("port = ")[1])
+        num_of_workers = int(file.readline().strip("\n").split("num_of_workers = ")[1])
+        bot = ("True" in file.readline())
+        if bot:
+            bot_cfg_path = file.readline().strip("\n").split("bot_cfg_path = ")[1]
+
 
     # AF_INET - internet socket, SOCK_STREAM - connection-based protocol for TCP, 
     # IPPROTO_TCP - choosing TCP
@@ -157,7 +168,7 @@ def main():
 
     try:
         # Putting server into listening mode
-        server_socket.listen(10)
+        server_socket.listen(num_of_workers)
     except socket.error:
         print("[System]: Socket listen failed!")
         traceback.print_exc()
@@ -179,9 +190,9 @@ def main():
         CreateDB.create_database(False)
 
     # Does not wait, but we don't need to, because kill it while closing connection
-    if '--TGbot' in sys.argv:
+    if bot:
         global TGBot
-        TGBot = subprocess.Popen("./TGBot.py")
+        TGBot = subprocess.Popen(["./TGBot.py", f"{bot_cfg_path}"])
         print("[System]: Telegram bot has been activated!")
 
     # Main loop
@@ -288,7 +299,7 @@ def main():
             break_connection(server_socket)
         except:
             pass
-        if '--TGbot' in sys.argv:
+        if bot:
             TGBot.kill()
         if os.path.isfile("n_FileToSend.dat"):
             os.remove("n_FileToSend.dat")

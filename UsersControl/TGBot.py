@@ -9,6 +9,7 @@ from telegram.ext import CallbackQueryHandler, CommandHandler, ContextTypes
 from telegram.replykeyboardmarkup import ReplyKeyboardMarkup
 from telegram.replykeyboardremove import ReplyKeyboardRemove
 import os
+import sys
 
 import CreateDB
 import DB_access
@@ -126,7 +127,10 @@ def ProceedKeyboard(update: Update, context: CallbackContext):
 
 def main():
     try:
-        updater = Updater("5341440273:AAHw6wLvQcQAINCWW9epFTDPHGK9lr38BP8", use_context=True)
+        with open(sys.argv[1], "r") as file:
+            token = file.readline().strip("\n").split("Token = ")[1]
+
+        updater = Updater(token, use_context=True)
         updater.dispatcher.add_handler(CommandHandler('start', start))
         updater.dispatcher.add_handler(CommandHandler('info', info))
         updater.dispatcher.add_handler(CommandHandler('help', helpfunc))

@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import random
+import string
 import socket
 import select
 import traceback
@@ -187,18 +189,30 @@ def main_iteration():
     get_integral_info()
 
 
+def generate_machine_id():
+    machine_id = ''.join(random.choice(string.ascii_letters + string.digits) for i in range(32))
+    return machine_id
+
 
 def main():
-    
-    # Getting connection info
-    host = str(input("Enter main server host: "))
-    port = int(input("Enter port: "))
-    nickname = str(input("Enter your name: "))
+    if len(sys.argv) < 2:
+        print(f"Usage: {sys.argv[0]} [config_path]")
+        sys.exit(1)
 
+    # Getting connection info
+    with open(sys.argv[1], "r+") as file:
+        host = file.readline().strip("\n").split("host = ")[1]
+        port = int(file.readline().strip("\n").split("port = ")[1])
+        nickname = file.readline().strip("\n").split("nickname = ")[1]
+        machine_id_raw = file.readline().strip("\n").split("machine id = ")
+        if len(machine_id_raw) < 2 or machine_id_raw[1] == '':
+            machine_id = generate_machine_id()
+            file.write(machine_id)
+        else:
+            machine_id = machine_id_raw[1] 
+    
     # Connecting to server
     worker = TcpClient(host, port)
-
-    warnings.filterwarnings("ignore")
 
     global window_pids
     window_pids = []
