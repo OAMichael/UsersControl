@@ -6,9 +6,10 @@ import traceback
 import sys
 import subprocess
 import time
+import asyncio
 from datetime import datetime
 from collections import deque
-from server import TcpServer
+from server_new import TcpServer
 import os
 from models.Database import DATABASE_NAME
 from models.Database import Session
@@ -19,37 +20,6 @@ import DB_access
 BUFSIZE = 2048
 ENCODE = 'utf-8'
 TCP_KEEPALIVE_TIMEOUT = 300
-
-# Lists for program work
-connection_list = []
-nicknames = []
-addresses = []
-
-# Command which persuade server to close connection
-quit_list = ["quit\n", "Quit\n", "q\n", "exit\n", "Exit\n"]
-
-
-# Function to disconnect particular user
-def disconnect_client(user):
-    if user in connection_list:
-        index = connection_list.index(user)
-        connection_list.remove(user)
-        nick = nicknames[index]
-        addr = addresses[index]
-        del nicknames[index]
-        del addresses[index]
-        try:
-            user.shutdown(socket.SHUT_RDWR)
-            user.close()
-            print(f"[System]: Disconnected: ({nick}, {addr})")
-        except Exception as e:
-            if e.errno == 57:
-                pass
-            else:
-                print("[System]: The user doesn't exist or already removed")
-                pass
-    else:
-        print("[System]: Trying to disconnect unknown worker")
 
 
 # Function which parses newly brought message into separate lines and info
@@ -82,9 +52,6 @@ def parse_message(info_string):
                       'third_window_percent': 0
                       }
 
-    # Now get information about windows
-    opened_windows = []
-
     # Very primitive, but it works
     for line in message_list_windows:
         
@@ -107,27 +74,34 @@ def parse_message(info_string):
             integral_node['third_window_percent'] = line.split('::::')[2]
             continue
 
-        # All named info is described above. Only unnamed information is about 
-        # opened windows, so code goes there only if everything else is read
-        #if line:
-            #opened_windows.append(line)
-
     return integral_node, processes
 
 
-# Function which server connection
-def break_connection(server_socket):
-    for connection in connection_list:
-        # First, we disconnect everyone else
-        if connection == server_socket or connection == sys.stdin:
-            continue
-        connection.sendall("[System]: Closing connection...".encode(ENCODE))
-        disconnect_client(connection)
-    # And then shut down the server
-    server_socket.shutdown(socket.SHUT_RDWR)
-    server_socket.close()
-    print("[System]: Closing connection...")
-    sys.exit(0)
+def AddUserInfoFromFile(nickname, computer, filename):
+    info_string = ""
+    file = open("n_" + filename, "r")
+    info_string = file.read()
+    file.close()
+    os.remove("n_" + filename)
+
+    # And parse all information
+    node, processes = parse_message(info_string)
+    try:
+        DB_access.AddComputerInfo(DB_access.Session(), computer, node)
+
+        for process in processes:
+            proc_node = {   'app_name': process[0],
+                            'computer': computer,
+                            'create_time': process[1],
+                            'status': process[2],
+                            'rss': process[3],
+                            'vms': process[4],
+                            'shared': process[5],
+                            'data': process[6]
+                       }
+            DB_access.AddApplication(DB_access.Session(), proc_node)
+    except:
+        pass
 
 
 def main():
@@ -146,48 +120,15 @@ def main():
             bot_cfg_path = file.readline().strip("\n").split("bot_cfg_path = ")[1]
 
 
-    # AF_INET - internet socket, SOCK_STREAM - connection-based protocol for TCP, 
-    # IPPROTO_TCP - choosing TCP
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-    # Check and turn on TCP Keepalive
-    x = server_socket.getsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE)
-    if x == 0:
-        x = server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-        # Overrides value (in seconds) for keepalive
-        server_socket.setsockopt(socket.SOL_TCP, socket.TCP_KEEPINTVL, TCP_KEEPALIVE_TIMEOUT)
-
-    try:
-        # Assigning IP and port num to socket
-        server_socket.bind((host, port))
-    except socket.error:
-        print("[System]: Socket bind failed!")
-        traceback.print_exc()
-        sys.exit(1)
-
-    try:
-        # Putting server into listening mode
-        server_socket.listen(num_of_workers)
-    except socket.error:
-        print("[System]: Socket listen failed!")
-        traceback.print_exc()
-        sys.exit(1)
-
-    connection_list.append(server_socket)
-    nicknames.append("Server")
-    addresses.append( (host, port) )
-
-    # We will need stdin, so also add it 
-    connection_list.append(sys.stdin)
-    nicknames.append("__stdin")
-    addresses.append(0)
-
+    Server = TcpServer(port, host)
     print("[System]: Socket setup has been done!")
 
     db_existed = os.path.exists(DATABASE_NAME)
     if not db_existed:
         CreateDB.create_database(False)
+        print("[System]: Database has been created!")
+    else:
+        print("[System]: Database has been connected!")
 
     # Does not wait, but we don't need to, because kill it while closing connection
     if bot:
@@ -196,113 +137,17 @@ def main():
         print("[System]: Telegram bot has been activated!")
 
     # Main loop
-    try:
-        while True:
-            # Get the list of sockets that are ready to be read
-            read_sockets, write_sockets, error_sockets = select.select(connection_list,[],[])
-
-            # Process if we got data
-            for sock in read_sockets:
-                # New connection
-                if sock == server_socket:
-                    # Processing new client
-                    client, address = server_socket.accept()
-                    # Obtain a nickname of a new worker
-                    nick = client.recv(BUFSIZE).decode(ENCODE)
-                    # If there is already such name, decline the worker connection
-                    if nick in nicknames:
-                        disconnect_client(client)
-                        continue
-
-                    # Show message about new connection on server
-                    print(f"[System]: New connection: ({nick}, {address})")
-                    # Adding new worker to list of connections, names, and main dictionary
-                    connection_list.append(client)
-                    nicknames.append(nick)
-                    addresses.append(address)
-                    try:
-                        DB_access.AddUser(DB_access.Session(), nick, nicknames.index(nick) - 1, f"{address}")
-                    except:
-                        disconnect_client(client)
-
-                # But if we got a data from stdin, it's likely to be message to break connection
-                elif sock == sys.stdin:
-                    command = sys.stdin.readline()
-                    # But also it may just a mistake
-                    if command in quit_list:
-                        break_connection(server_socket)
-
-                # Incoming message from a client
-                else:
-                    # Data received -> processing
-                    try:
-                        data = sock.recv(BUFSIZE)
-                        if data.startswith(b'$'):
-                            data = data.decode(ENCODE)
-                            data = data[1:-1]
-                            fileheader = data.split("_")
-                            filename = fileheader[0]
-                            filelength = int(fileheader[1])
-
-                            sock.sendall("$filenamereceived$".encode(ENCODE))
-                            file = open('n_' +filename, 'wb')
-                            chunks = b''
-                            bytes_recd = 0
-                            while bytes_recd < filelength:
-                                chunk = sock.recv(min(filelength - bytes_recd, BUFSIZE))
-                                if chunk == b'':
-                                    raise RuntimeError("socket connection broken")
-                                chunks = chunks + chunk
-                                bytes_recd = bytes_recd + len(chunk)
-
-                            bytes_wrt = 0
-                            try:
-                                file.write(chunks)
-                            except Exception:
-                                traceback.print_exc()
-
-                            file.close()
-                            sock.sendall("$filereceived$".encode(ENCODE))
-
-                            info_string = ""
-                            file = open("n_FileToSend.dat", "r")
-                            info_string = file.read()
-                            file.close()
-                            os.remove("n_FileToSend.dat")
-
-                            nick = nicknames[connection_list.index(sock)]
-                            # And parse all information
-                            node, processes = parse_message(info_string)
-                            try:
-                                DB_access.AddComputerInfo(DB_access.Session(), nicknames.index(nick) - 1, node)
-
-                                for process in processes:
-                                    proc_node = {   'app_name': process[0],
-                                                    'computer': nicknames.index(nick) - 1,
-                                                    'create_time': process[1],
-                                                    'status': process[2],
-                                                    'rss': process[3],
-                                                    'vms': process[4],
-                                                    'shared': process[5],
-                                                    'data': process[6]
-                                               }
-                                    DB_access.AddApplication(DB_access.Session(), proc_node)
-                            except:
-                                pass
-
-                    except:
-                        traceback.print_exc()
-                        continue
-    except:
+    #try:
+    serv = asyncio.run(Server.serve(DB_access.AddUser, AddUserInfoFromFile, DB_access.Session))
+    #except:
         # Cleaning everything
-        try:
-            break_connection(server_socket)
-        except:
-            pass
-        if bot:
-            TGBot.kill()
-        if os.path.isfile("n_FileToSend.dat"):
-            os.remove("n_FileToSend.dat")
+    del Server
+    print("[System]: Closing connection...")
+    if bot:
+        TGBot.kill()
+        #if os.path.isfile("n_FileToSend.dat"):
+            #os.remove("n_FileToSend.dat")
+
 
 if __name__ == '__main__':
     main()

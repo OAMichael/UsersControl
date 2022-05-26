@@ -10,40 +10,47 @@ BUFSIZE = 2048
 ENCODE = 'utf-8'
 SOCKET_TIMEOUT = 10
 TCP_KEEPALIVE_TIMEOUT = 300
-PIPELINE = 10
+PIPELINE = 2
 
 class TcpClient(object):
 
-    def __init__(self, host, port, nickname):
-        print ("* Creating the server socket")
+    def __init__(self, host, port, nickname, machine_id):
+        self.nickname = nickname
+        self.machine_id = machine_id
+        print ("[System]: Creating the server socket")
         self.ctx = zmq.Context()
         self.client_socket = self.ctx.socket(zmq.DEALER)
         
-        socket_set_hwm(self.client_socket, PIPELINE)
+        try:
+            self.client_socket.sndhwm = self.client_socket.rcvhwm = PIPELINE
+        except AttributeError:
+            self.client_socket.hwm = PIPELINE
 
         # Check and turn on TCP Keepalive
         x = self.client_socket.getsockopt(zmq.TCP_KEEPALIVE) 
         if (x == 0):
-            print ("* Socket Keepalive off, turning on")
+            print ("[System]: Socket Keepalive off, turning on")
             x = self.client_socket.setsockopt(zmq.TCP_KEEPALIVE, 1)
-            print ('* setsockopt ' + str(x))
+            print ('[System]: setsockopt ' + str(x))
             # Overrides value (in seconds) for keepalive
             self.client_socket.setsockopt(zmq.TCP_KEEPALIVE_INTVL, TCP_KEEPALIVE_TIMEOUT)
         else:
-            print ("* Socket Keepalive already on")
+            print ("[System]: Socket Keepalive already on")
         
+
         # Assigning IP and port num to socket
         self.client_socket.connect(f"tcp://{host}:{port}")
 
-        print("* Socket initializing completed!")
+        print("[System]: Socket initializing completed!")
 
         while True:
             self.client_socket.send_multipart([
                 b"reg",
-                packb([nickname, host, port]),
+                packb([nickname, machine_id, host, port]),
             ])
 
             msg = self.client_socket.recv()
+
             if (msg ==b"OK"):
                 break
             elif (msg == b"OCCUPIED"):
@@ -56,11 +63,9 @@ class TcpClient(object):
             else:
                 raise RuntimeError("Unknown server reply")
 
-        print("* Connection successfully registered!")
 
-            
-    def register_nickname(self, nickname):
-        self.client_socket.sendall(f"$nick_{nickname}$")
+        print("[System]: Connection successfully registered!")
+
 
     def sendfile(self, filepath, file):
         filesize = os.path.getsize(filepath)
@@ -91,10 +96,8 @@ class TcpClient(object):
             data = file.read(chunksz)
 
             if not data:
-                print("Sending complete!")
-                break
 
-            #data = packb(data)
+                break
 
             self.client_socket.send(packb(data))
 
@@ -105,11 +108,6 @@ class TcpClient(object):
                 msg.encode(ENCODE),
             ])
 
-def socket_set_hwm(socket, hwm=-1):
-    try:
-        socket.sndhwm = socket.rcvhwm = hwm
-    except AttributeError:
-        socket.hwm = hwm
 
 
 if __name__ == "__main__":

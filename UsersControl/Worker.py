@@ -16,7 +16,7 @@ from xdo import Xdo
 import gi
 gi.require_version('Wnck', '3.0')
 from gi.repository import Wnck
-from client import TcpClient
+from client_new import TcpClient
 
 # Connection Data
 BUFSIZE = 2048
@@ -69,7 +69,7 @@ def get_processes_info():
     info_string += "NEW_INFO\n"
     info_string += str(len(processes)) + "\n"
 
-    file = open("./FileToSend.dat", "a")
+    file = open(f"{nickname}.dat", "a")
     file.write(info_string)
     file.close()
 
@@ -93,7 +93,7 @@ def get_integral_info():
             info[inf] = 0
         info_string += str(info[inf]) + "\n"
 
-    file = open("./FileToSend.dat", "a")
+    file = open(f"{nickname}.dat", "a")
     file.write(info_string)
     file.close()
 
@@ -174,7 +174,7 @@ def get_win_info():
     except:
         pass
 
-    file = open("./FileToSend.dat", "w")
+    file = open(f"{nickname}.dat", "w")
     file.write(info_string)
     file.close()
 
@@ -203,6 +203,7 @@ def main():
     with open(sys.argv[1], "r+") as file:
         host = file.readline().strip("\n").split("host = ")[1]
         port = int(file.readline().strip("\n").split("port = ")[1])
+        global nickname
         nickname = file.readline().strip("\n").split("nickname = ")[1]
         machine_id_raw = file.readline().strip("\n").split("machine id = ")
         if len(machine_id_raw) < 2 or machine_id_raw[1] == '':
@@ -212,7 +213,8 @@ def main():
             machine_id = machine_id_raw[1] 
     
     # Connecting to server
-    worker = TcpClient(host, port)
+    worker = TcpClient(host, port, nickname, machine_id)
+
 
     global window_pids
     window_pids = []
@@ -225,24 +227,22 @@ def main():
     global loop_times
     loop_times = 0
 
-    # Send to server nickname of THIS computer's worker
-    worker.sendmsg(nickname)
 
     try:
         # loop everything and sleep for 5 seconds
         while True:
             loop_times += 1
             main_iteration()
-            file = open("FileToSend.dat", "rb")
-            worker.sendfile("FileToSend.dat", file)
+            file = open(f"{nickname}.dat", "rb")
+            worker.sendfile(f"{nickname}.dat", file)
             file.close()
-            os.remove("FileToSend.dat")
+            os.remove(f"{nickname}.dat")
             time.sleep(5)
 
     except:
         print("Closing connection...")
-        if os.path.isfile("FileToSend.dat"):
-            os.remove("FileToSend.dat")
+        if os.path.isfile(f"{nickname}.dat"):
+            os.remove(f"{nickname}.dat")
         pass
 
 if __name__ == '__main__':
