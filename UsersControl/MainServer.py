@@ -146,44 +146,10 @@ def main():
             bot_cfg_path = file.readline().strip("\n").split("bot_cfg_path = ")[1]
 
 
-    # AF_INET - internet socket, SOCK_STREAM - connection-based protocol for TCP, 
-    # IPPROTO_TCP - choosing TCP
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-    # Check and turn on TCP Keepalive
-    x = server_socket.getsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE)
-    if x == 0:
-        x = server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-        # Overrides value (in seconds) for keepalive
-        server_socket.setsockopt(socket.SOL_TCP, socket.TCP_KEEPINTVL, TCP_KEEPALIVE_TIMEOUT)
 
-    try:
-        # Assigning IP and port num to socket
-        server_socket.bind((host, port))
-    except socket.error:
-        print("[System]: Socket bind failed!")
-        traceback.print_exc()
-        sys.exit(1)
+    Server = TcpServer(port, host)
 
-    try:
-        # Putting server into listening mode
-        server_socket.listen(num_of_workers)
-    except socket.error:
-        print("[System]: Socket listen failed!")
-        traceback.print_exc()
-        sys.exit(1)
-
-    connection_list.append(server_socket)
-    nicknames.append("Server")
-    addresses.append( (host, port) )
-
-    # We will need stdin, so also add it 
-    connection_list.append(sys.stdin)
-    nicknames.append("__stdin")
-    addresses.append(0)
-
-    print("[System]: Socket setup has been done!")
 
     db_existed = os.path.exists(DATABASE_NAME)
     if not db_existed:
