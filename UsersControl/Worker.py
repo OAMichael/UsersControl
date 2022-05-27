@@ -16,12 +16,8 @@ from xdo import Xdo
 import gi
 gi.require_version('Wnck', '3.0')
 from gi.repository import Wnck
-from client_new import TcpClient
+from client_async import TcpClient
 
-# Connection Data
-BUFSIZE = 2048
-ENCODE = 'utf-8'
-SOCKET_TIMEOUT = 5
 
 # ----------------------------------------------- Info about processes -----------------------------------------------
 def get_processes_info():
