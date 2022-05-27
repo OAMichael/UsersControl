@@ -51,18 +51,20 @@ class TcpClient(object):
 
             msg = self.client_socket.recv()
 
-            if (msg ==b"OK"):
+            if msg == b"OK":
                 break
-            elif (msg == b"OCCUPIED"):
-                input_string = input("Your nickname is occupied! Enter another one, or command <exit> to end program:")
-                if (input_string == "exit"):
+            elif msg == b"ID OCCUPIED":
+                print("Your machine id already in use. Your account might be hacked")
+                sys.exit(0)
+            elif msg == b"NICK OCCUPIED":
+                input_string = input("Your nickname is occupied! Enter another one, or command <exit> to end the program: ")
+                if input_string == "exit":
                     sys.exit(0)
                 else:
                     nickname = input_string
                     continue
             else:
                 raise RuntimeError("Unknown server reply")
-
 
         print("[System]: Connection successfully registered!")
 
@@ -77,7 +79,6 @@ class TcpClient(object):
         ])
 
         while True:
-
             try:
                 msg = self.client_socket.recv_multipart()
             except zmq.ZMQError as exc:
@@ -96,17 +97,13 @@ class TcpClient(object):
             data = file.read(chunksz)
 
             if not data:
-
                 break
 
             self.client_socket.send(packb(data))
 
             
     def sendmsg(self, msg):
-            self.client_socket.send_multipart([
-                b"msg",
-                msg.encode(ENCODE),
-            ])
+            self.client_socket.send_multipart([b"msg", msg.encode(ENCODE),])
 
 
 

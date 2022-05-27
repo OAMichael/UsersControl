@@ -19,10 +19,10 @@ PIPELINE = 2
 class TcpServer(object):
 
     def __init__(self, port, quantity_of_users, host = "0.0.0.0"):
-        self.clients = 0
         self.clientdict = {}
         self.connection_list = []
         self.machine_ids = []
+        self.nicknames = []
 
         print ("[System]: Creating the server socket")
         self.ctx = zmq.asyncio.Context()
@@ -61,12 +61,17 @@ class TcpServer(object):
             return
         identity, command, data = msg
    
-        if (command == b"reg"):
+        if command == b"reg":
             nickname, machine_id, host, port = unpackb(data)
-            if (identity in self.clientdict):
+            if machine_id in self.machine_ids:
                 await self.server_socket.send_multipart([
                     identity,
-                    b"OCCUPIED",
+                    b"ID OCCUPIED",
+                ])
+            elif nickname in self.nicknames:
+                await self.server_socket.send_multipart([
+                    identity,
+                    b"NICK OCCUPIED",
                 ])
             else:
                 self.clientdict[identity] = (nickname, machine_id, host, port)
@@ -74,9 +79,10 @@ class TcpServer(object):
                     identity,
                     b"OK",
                 ])
-            self.machine_ids.append(machine_id)
-            AddUser(Session(), nickname, self.machine_ids.index(machine_id) + 1, f"{host}:{port}")
-        elif (command == b"file" ):
+                self.machine_ids.append(machine_id)
+                self.nicknames.append(nickname)
+                AddUser(Session(), nickname, self.machine_ids.index(machine_id) + 1, f"{host}:{port}")
+        elif command == b"file" and identity in self.clientdict:
             filename, filesize = unpackb(data)
 
             async with async_open('n_' + filename, 'wb') as file:
