@@ -1,0 +1,8 @@
+*.log
+*.s3db
+__pycache__
+*.dat
+worker_base.sqlite
+db_test.py
+*.txt
+DB_test.py
