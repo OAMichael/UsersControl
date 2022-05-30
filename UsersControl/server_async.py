@@ -40,6 +40,7 @@ class TcpServer(object):
             x = self.server_socket.setsockopt(zmq.TCP_KEEPALIVE, 1)
             print ('[System]: setsockopt ' + str(x))
             # Overrides value (in seconds) for keepalive
+            self.server_socket.setsockopt(zmq.TCP_KEEPALIVE_IDLE, TCP_KEEPALIVE_TIMEOUT)
             self.server_socket.setsockopt(zmq.TCP_KEEPALIVE_INTVL, TCP_KEEPALIVE_TIMEOUT)
         else:
             print ("[System]: Socket Keepalive already on")
