@@ -208,7 +208,7 @@ class TcpServer(object):
                 else:
                     st = sys.stdin.readline()
                     if "exit" in st:
-                        raise KeyboardException
+                        raise KeyboardInterrupt
 
 
 if __name__ == "__main__":

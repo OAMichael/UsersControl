@@ -6,3 +6,4 @@ worker_base.sqlite
 db_test.py
 *.txt
 DB_test.py
+*.sh

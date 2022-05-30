@@ -15,6 +15,8 @@ from models.Database import DATABASE_NAME
 from models.Database import Session
 import CreateDB
 import DB_access
+import zmq
+from msgpack import unpackb, packb
 
 
 # Function which parses newly brought message into separate lines and info
@@ -108,11 +110,12 @@ async def recv_and_process_loop(socket):
     if command == b"reg":
         nickname, machine_id, host, port = unpackb(data)
         await socket.register_user(identity, data)
-        AddUser(Session(), nickname, socket.machine_ids.index(machine_id) + 1, f"{host}:{port}")
+        DB_access.AddUser(Session(), nickname, socket.machine_ids.index(machine_id) + 1, f"{host}:{port}")
     elif command == b"file" and identity in socket.clientdict:
         filename, filesize = unpackb(data)
         await socket.recv_file(identity, data)
         AddUserInfoFromFile(socket.clientdict[identity][0], socket.machine_ids.index(socket.clientdict[identity][1]) + 1, filename)
+
 
 async def serve_loop(socket):
     poll = zmq.asyncio.Poller()
@@ -128,7 +131,7 @@ async def serve_loop(socket):
             else:
                 st = sys.stdin.readline()
                 if "exit" in st:
-                    raise KeyboardException
+                    raise KeyboardInterrupt
 
 def main():
     if len(sys.argv) < 2:
@@ -163,16 +166,14 @@ def main():
         print("[System]: Telegram bot has been activated!")
 
     # Main loop
-    #try:
-    serv = asyncio.run(Server.serve(DB_access.AddUser, AddUserInfoFromFile, DB_access.Session))
-    #except:
+    try:
+    serv = asyncio.run(serve_loop(Server))
+    except KeyboardInterrupt:
         # Cleaning everything
-    del Server
-    print("[System]: Closing connection...")
-    if bot:
-        TGBot.kill()
-        #if os.path.isfile("n_FileToSend.dat"):
-            #os.remove("n_FileToSend.dat")
+        del Server
+        print("[System]: Closing connection...")
+        if bot:
+            TGBot.kill()
 
 
 if __name__ == '__main__':
