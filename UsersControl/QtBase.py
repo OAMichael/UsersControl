@@ -7,7 +7,6 @@ import sys
 from PyQt5.QtCore import Qt
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery, QSqlQueryModel
 from PyQt5.QtWidgets import QApplication, QTableWidgetItem
-from PyQt5.QtGui import QPixmap
 from PyQt5 import uic
 
 def res_path(res_name):
