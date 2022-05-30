@@ -114,6 +114,22 @@ async def recv_and_process_loop(socket):
         await socket.recv_file(data)
         AddUserInfoFromFile(socket.clientdict[identity][0], socket.machine_ids.index(socket.clientdict[identity][1]) + 1, filename)
 
+async def serve_loop(socket):
+    poll = zmq.asyncio.Poller()
+    poll.register(socket.server_socket, zmq.POLLIN)
+    poll.register(sys.stdin, zmq.POLLIN)
+
+    while True:
+        sockets = await poll.poll()
+        sockets = dict(sockets)
+        if sockets:
+            if socket.server_socket in sockets:
+                await recv_and_process_loop(socket)
+            else:
+                st = sys.stdin.readline()
+                if "exit" in st:
+                    raise KeyboardException
+
 def main():
     if len(sys.argv) < 2:
         print(f"Usage: {sys.argv[0]} [config_path]")
