@@ -107,11 +107,11 @@ async def recv_and_process_loop(socket):
 
     if command == b"reg":
         nickname, machine_id, host, port = unpackb(data)
-        await socket.register_user(data)
+        await socket.register_user(identity, data)
         AddUser(Session(), nickname, socket.machine_ids.index(machine_id) + 1, f"{host}:{port}")
     elif command == b"file" and identity in socket.clientdict:
         filename, filesize = unpackb(data)
-        await socket.recv_file(data)
+        await socket.recv_file(identity, data)
         AddUserInfoFromFile(socket.clientdict[identity][0], socket.machine_ids.index(socket.clientdict[identity][1]) + 1, filename)
 
 async def serve_loop(socket):

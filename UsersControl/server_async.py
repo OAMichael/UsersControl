@@ -55,7 +55,7 @@ class TcpServer(object):
     def __del__(self):
         self.ctx.destroy()
 
-    async def register_user(self, data):
+    async def register_user(self, identity, data,):
         nickname, machine_id, host, port = unpackb(data)
         if machine_id in self.machine_ids:
             await self.server_socket.send_multipart([
@@ -77,7 +77,7 @@ class TcpServer(object):
             self.nicknames.append(nickname)
 
 
-    async def recv_file(self, data):
+    async def recv_file(self, identity, data):
         filename, filesize = unpackb(data)
 
         async with async_open('n_' + filename, 'wb') as file:
