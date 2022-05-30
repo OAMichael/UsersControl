@@ -55,6 +55,71 @@ class TcpServer(object):
     def __del__(self):
         self.ctx.destroy()
 
+    async def register_user(self, data):
+        nickname, machine_id, host, port = unpackb(data)
+        if machine_id in self.machine_ids:
+            await self.server_socket.send_multipart([
+                identity,
+                b"ID OCCUPIED",
+            ])
+        elif nickname in self.nicknames:
+            await self.server_socket.send_multipart([
+                identity,
+                b"NICK OCCUPIED",
+            ])
+        else:
+            self.clientdict[identity] = (nickname, machine_id, host, port)
+            await self.server_socket.send_multipart([
+                identity,
+                b"OK",
+            ])
+            self.machine_ids.append(machine_id)
+            self.nicknames.append(nickname)
+
+
+    async def recv_file(self, data):
+        filename, filesize = unpackb(data)
+
+        async with async_open('n_' + filename, 'wb') as file:
+
+            credit = PIPELINE    # Up to PIPELINE chunks in transit
+
+            total = 0            # Total bytes received
+            chunks = b""         # Buffer for incoming file
+            offset = 0           # Offset of next chunk request
+
+            while True:
+                while credit:
+                    # ask for next chunk
+                    await self.server_socket.send_multipart([
+                        identity,
+                        b"fetch",
+                        b"%i" % offset,
+                        b"%i" % BUFSIZE,
+                    ])
+
+                    offset += BUFSIZE
+                    credit -= 1
+                try:
+                    msg = await self.server_socket.recv_multipart()
+                    identity, chunk = msg
+                except zmq.ZMQError as exc:
+                    if e.errno == zmq.ETERM:
+                        return # shutting down, quit
+                    else:
+                        raise 
+
+                chunks += unpackb(chunk)
+
+                credit += 1
+                size = len(chunk)
+                total += size
+                if size < BUFSIZE:
+                    break       # Last chunk received; exit
+
+
+            await file.write(chunks)
+
 
     async def recv_and_process(self, AddUser, AddUserInfoFromFile, Session):
         msg = await self.server_socket.recv_multipart()
@@ -97,7 +162,7 @@ class TcpServer(object):
                 while True:
                     while credit:
                         # ask for next chunk
-                        self.server_socket.send_multipart([
+                        await self.server_socket.send_multipart([
                             identity,
                             b"fetch",
                             b"%i" % offset,
