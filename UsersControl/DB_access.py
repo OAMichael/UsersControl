@@ -17,6 +17,8 @@ def GetComputerInfo(session: Session, name: str) -> Computer:
     user_computer_history = session.query(Computer).join(User).filter(User.name == name)
     return user_computer_history[-1]
 
+#TODO: изменить функции добавления юзера и компьютера, так как изменилась структура модели
+
 # добавляет нового юзера и компьютер, соответствующий ему
 def AddUser(session: Session, name: str, comp: int, ip: str):
     new_user = User(name, comp, ip)
@@ -231,3 +233,10 @@ def GetMostUsableWindows(session: Session, user_name: str):
     most_usable_windows_percent.append(cur_comp.third_window_percent)
 
     return most_usable_windows, most_usable_windows_percent
+
+'''
+возвращает список всех machine_id
+'''
+def GetMachineID(session: Session) -> list:
+    machine_id = [comp.MachineID for comp in session.query(Computer)]
+    return machine_id
