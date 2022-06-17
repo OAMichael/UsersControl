@@ -167,7 +167,7 @@ def main():
 
     # Main loop
     try:
-    serv = asyncio.run(serve_loop(Server))
+        serv = asyncio.run(serve_loop(Server))
     except KeyboardInterrupt:
         # Cleaning everything
         del Server

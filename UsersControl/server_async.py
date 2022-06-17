@@ -2,8 +2,10 @@
 
 
 import sys
+import os
 import signal
 import traceback
+import logging
 import zmq
 import asyncio
 import zmq.asyncio
@@ -24,36 +26,43 @@ class TcpServer(object):
         self.machine_ids = []
         self.nicknames = []
 
-        print ("[System]: Creating the server socket")
+        log_dir = os.path.join(os.path.normpath(os.getcwd() + os.sep + os.pardir), 'logs')
+        log_fname = os.path.join(log_dir, 'server_logfile.log')
+        logging.basicConfig(filename=log_fname, filemode='w', encoding='utf-8', format='%(asctime)s %(message)s', level=logging.INFO)
+
+
+        logging.info("Creating the server socket")
         self.ctx = zmq.asyncio.Context()
         self.server_socket = self.ctx.socket(zmq.ROUTER)
         
         try:
             self.server_socket.sndhwm = self.server_socket.rcvhwm = PIPELINE
         except AttributeError:
+            logging.exception()
             self.server_socket.hwm = PIPELINE
 
         # Check and turn on TCP Keepalive
         x = self.server_socket.getsockopt(zmq.TCP_KEEPALIVE) 
         if (x == 0):
-            print ("[System]: Socket Keepalive off, turning on")
+            logging.info("Socket Keepalive off, turning on")
             x = self.server_socket.setsockopt(zmq.TCP_KEEPALIVE, 1)
-            print ('[System]: setsockopt ' + str(x))
+            logging.info('setsockopt ' + str(x))
             # Overrides value (in seconds) for keepalive
             self.server_socket.setsockopt(zmq.TCP_KEEPALIVE_IDLE, TCP_KEEPALIVE_TIMEOUT)
             self.server_socket.setsockopt(zmq.TCP_KEEPALIVE_INTVL, TCP_KEEPALIVE_TIMEOUT)
         else:
-            print ("[System]: Socket Keepalive already on")
+            logging.info("Socket Keepalive already on")
 
 
         # Assigning IP and port num to socket
         self.server_socket.bind(f"tcp://{host}:{port}")
 
 
-        print("[System]: Socket initializing completed!")
+        logging.info("Socket initializing completed!")
 
     def __del__(self):
         self.ctx.destroy()
+        logging.info("Closing server")
 
     async def register_user(self, identity, data,):
         nickname, machine_id, host, port = unpackb(data)
@@ -107,6 +116,7 @@ class TcpServer(object):
                     if e.errno == zmq.ETERM:
                         return # shutting down, quit
                     else:
+                        logging.exception()
                         raise 
 
                 chunks += unpackb(chunk)
@@ -178,6 +188,7 @@ class TcpServer(object):
                         if e.errno == zmq.ETERM:
                             return # shutting down, quit
                         else:
+                            logging.exception()
                             raise 
 
                     chunks += unpackb(chunk)
