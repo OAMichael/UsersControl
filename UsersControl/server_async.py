@@ -28,6 +28,8 @@ class TcpServer(object):
 
         log_dir = os.path.join(os.path.normpath(os.getcwd() + os.sep + os.pardir), 'logs')
         log_fname = os.path.join(log_dir, 'server_logfile.log')
+        with open(log_fname, "w") as fp:
+            pass
         logging.basicConfig(filename=log_fname, filemode='w', format='%(asctime)s %(message)s', level=logging.INFO)
 
 
