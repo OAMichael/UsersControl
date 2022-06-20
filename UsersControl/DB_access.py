@@ -84,7 +84,7 @@ info = {
 def AddComputerInfo(session: Session, comp: int, info: dict):
     computer_number_list = [computer.number for computer in session.query(Computer)]
     if comp not in computer_number_list:
-        print("You try to add computer without user. This is not you really want)")
+        print("You try to add computer without user. This is not you really want")
         raise RuntimeError
 
     computer = Computer(comp)

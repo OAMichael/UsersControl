@@ -109,8 +109,9 @@ async def recv_and_process_loop(socket):
 
     if command == b"reg":
         nickname, machine_id, host, port = unpackb(data)
-        await socket.register_user(identity, data)
-        DB_access.AddUser(Session(), nickname, socket.machine_ids.index(machine_id) + 1, f"{host}:{port}")
+        adding = await socket.register_user(identity, data)
+        if adding:
+            DB_access.AddUser(Session(), nickname, socket.machine_ids.index(machine_id) + 1, f"{host}:{port}")
     elif command == b"file" and identity in socket.clientdict:
         filename, filesize = unpackb(data)
         await socket.recv_file(identity, data)
@@ -167,7 +168,7 @@ def main():
 
     # Main loop
     try:
-    serv = asyncio.run(serve_loop(Server))
+        serv = asyncio.run(serve_loop(Server))
     except KeyboardInterrupt:
         # Cleaning everything
         del Server

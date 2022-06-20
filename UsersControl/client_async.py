@@ -50,7 +50,6 @@ class TcpClient(object):
             ])
 
             msg = self.client_socket.recv()
-
             if msg == b"OK":
                 break
             elif msg == b"ID OCCUPIED":
