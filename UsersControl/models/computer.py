@@ -75,6 +75,6 @@ class Computer(Base):
     
     def __eq__(self, other):
         if isinstance(other, Computer):
-            return self.__MachineId == other.__MachineId
+            return self.number == other.number
         else:
             raise NotImplemented

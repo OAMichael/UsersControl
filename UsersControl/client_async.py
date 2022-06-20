@@ -119,7 +119,3 @@ if __name__ == "__main__":
     FileClient.sendfile(filepath, file)
 
     file.close()
-
-
-
-

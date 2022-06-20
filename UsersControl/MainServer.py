@@ -74,7 +74,7 @@ def parse_message(info_string):
     return integral_node, processes
 
 
-def AddUserInfoFromFile(nickname, computer, filename):
+def AddUserInfoFromFile(nickname, computer, machine_id, filename):
     info_string = ""
     file = open("n_" + filename, "r")
     info_string = file.read()
@@ -84,7 +84,7 @@ def AddUserInfoFromFile(nickname, computer, filename):
     # And parse all information
     node, processes = parse_message(info_string)
     try:
-        DB_access.AddComputerInfo(DB_access.Session(), computer, node)
+        DB_access.AddComputerInfo(DB_access.Session(), machine_id, computer, node)
 
         for process in processes:
             proc_node = {   'app_name': process[0],
@@ -111,11 +111,14 @@ async def recv_and_process_loop(socket):
         nickname, machine_id, host, port = unpackb(data)
         adding = await socket.register_user(identity, data)
         if adding:
-            DB_access.AddUser(Session(), nickname, socket.machine_ids.index(machine_id) + 1, f"{host}:{port}")
+            DB_access.AddUser(Session(), nickname, machine_id, socket.machine_ids.index(machine_id) + 1, f"{host}:{port}")
     elif command == b"file" and identity in socket.clientdict:
         filename, filesize = unpackb(data)
         await socket.recv_file(identity, data)
-        AddUserInfoFromFile(socket.clientdict[identity][0], socket.machine_ids.index(socket.clientdict[identity][1]) + 1, filename)
+        AddUserInfoFromFile(socket.clientdict[identity][0], 
+                            socket.machine_ids.index(socket.clientdict[identity][1]) + 1,
+                            socket.clientdict[identity][1],
+                            filename)
 
 
 async def serve_loop(socket):

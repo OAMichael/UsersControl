@@ -27,7 +27,7 @@ class MainWindow(MainForm):
 
         self.ui.Refresh.clicked.connect(self.__update)
         self.con = QSqlDatabase.addDatabase("QSQLITE")
-        self.con.setDatabaseName("worker_base.sqlite")
+        self.con.setDatabaseName("../worker_base.sqlite")
         if not self.con.open():
             print("Unable to connect to the database")
             sys.exit(1)

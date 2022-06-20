@@ -28,7 +28,7 @@ class TcpServer(object):
 
         log_dir = os.path.join(os.path.normpath(os.getcwd() + os.sep + os.pardir), 'logs')
         log_fname = os.path.join(log_dir, 'server_logfile.log')
-        logging.basicConfig(filename=log_fname, filemode='w', encoding='utf-8', format='%(asctime)s %(message)s', level=logging.INFO)
+        logging.basicConfig(filename=log_fname, filemode='w', format='%(asctime)s %(message)s', level=logging.INFO)
 
 
         logging.info("Creating the server socket")
@@ -129,99 +129,7 @@ class TcpServer(object):
                 if size < BUFSIZE:
                     break       # Last chunk received; exit
 
-
             await file.write(chunks)
-
-
-    async def recv_and_process(self, AddUser, AddUserInfoFromFile, Session):
-        msg = await self.server_socket.recv_multipart()
-        if msg[1] == b"":
-            return
-        identity, command, data = msg
-   
-        if command == b"reg":
-            nickname, machine_id, host, port = unpackb(data)
-            if machine_id in self.machine_ids:
-                await self.server_socket.send_multipart([
-                    identity,
-                    b"ID OCCUPIED",
-                ])
-            elif nickname in self.nicknames:
-                await self.server_socket.send_multipart([
-                    identity,
-                    b"NICK OCCUPIED",
-                ])
-            else:
-                self.clientdict[identity] = (nickname, machine_id, host, port)
-                await self.server_socket.send_multipart([
-                    identity,
-                    b"OK",
-                ])
-                self.machine_ids.append(machine_id)
-                self.nicknames.append(nickname)
-                AddUser(Session(), nickname, self.machine_ids.index(machine_id) + 1, f"{host}:{port}")
-        elif command == b"file" and identity in self.clientdict:
-            filename, filesize = unpackb(data)
-
-            async with async_open('n_' + filename, 'wb') as file:
-
-                credit = PIPELINE    # Up to PIPELINE chunks in transit
-
-                total = 0            # Total bytes received
-                chunks = b""         # Buffer for incoming file
-                offset = 0           # Offset of next chunk request
-
-                while True:
-                    while credit:
-                        # ask for next chunk
-                        await self.server_socket.send_multipart([
-                            identity,
-                            b"fetch",
-                            b"%i" % offset,
-                            b"%i" % BUFSIZE,
-                        ])
-
-                        offset += BUFSIZE
-                        credit -= 1
-                    try:
-                        msg = await self.server_socket.recv_multipart()
-                        identity, chunk = msg
-                    except zmq.ZMQError as exc:
-                        if e.errno == zmq.ETERM:
-                            return # shutting down, quit
-                        else:
-                            logging.exception()
-                            raise 
-
-                    chunks += unpackb(chunk)
-
-                    credit += 1
-                    size = len(chunk)
-                    total += size
-                    if size < BUFSIZE:
-                        break       # Last chunk received; exit
-
-
-                await file.write(chunks)
-
-            AddUserInfoFromFile(self.clientdict[identity][0], self.machine_ids.index(self.clientdict[identity][1]) + 1, filename)            
-
-
-    async def serve(self, AddUser, AddUserInfoFromFile, Session):
-        poll = zmq.asyncio.Poller()
-        poll.register(self.server_socket, zmq.POLLIN)
-        poll.register(sys.stdin, zmq.POLLIN)
-
-        while True:
-            sockets = await poll.poll()
-            sockets = dict(sockets)
-            if sockets:
-                if self.server_socket in sockets:
-                    await self.recv_and_process(AddUser, AddUserInfoFromFile, Session)
-                else:
-                    st = sys.stdin.readline()
-                    if "exit" in st:
-                        raise KeyboardInterrupt
 
 
 if __name__ == "__main__":
@@ -233,15 +141,3 @@ if __name__ == "__main__":
     asyncio.run(FileServer.serve())
     
     os.exit(0)
-
-
-
-
-
-
-
-
-
-
-
-

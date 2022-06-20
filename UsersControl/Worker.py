@@ -12,11 +12,18 @@ from datetime import datetime, time
 import time
 import os
 import warnings
-from xdo import xdo as Xdo
 import gi
 gi.require_version('Wnck', '3.0')
 from gi.repository import Wnck
 from client_async import TcpClient
+
+if sys.platform == 'linux' or sys.platform == 'linux2':
+    from xdo import Xdo
+elif sys.platform == 'darwin':
+    from xdo import xdo as Xdo
+else:
+    raise NotImplemented
+
 
 
 # ----------------------------------------------- Info about processes -----------------------------------------------
