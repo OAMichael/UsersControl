@@ -17,10 +17,12 @@ def GetComputerInfo(session: Session, name: str) -> Computer:
     user_computer_history = session.query(Computer).join(User).filter(User.name == name)
     return user_computer_history[-1]
 
+#TODO: изменить функции добавления юзера и компьютера, так как изменилась структура модели
+
 # добавляет нового юзера и компьютер, соответствующий ему
-def AddUser(session: Session, name: str, comp: int, ip: str):
+def AddUser(session: Session, name: str, machine_id: str, comp: int, ip: str):
     new_user = User(name, comp, ip)
-    new_comuter = Computer(comp)
+    new_comuter = Computer(machine_id, comp)
     
     exists_users = session.query(User)
     if new_user in exists_users:
@@ -81,13 +83,13 @@ info = {
     'Total_mem_used' : 1.2
     }
 '''
-def AddComputerInfo(session: Session, comp: int, info: dict):
+def AddComputerInfo(session: Session, machine_id: str, comp: int, info: dict):
     computer_number_list = [computer.number for computer in session.query(Computer)]
     if comp not in computer_number_list:
         print("You try to add computer without user. This is not you really want")
         raise RuntimeError
 
-    computer = Computer(comp)
+    computer = Computer(machine_id, comp)
     computer.first_window = info['first_window']
     computer.second_window = info['second_window']
     computer.third_window = info['third_window']
@@ -231,3 +233,10 @@ def GetMostUsableWindows(session: Session, user_name: str):
     most_usable_windows_percent.append(cur_comp.third_window_percent)
 
     return most_usable_windows, most_usable_windows_percent
+
+'''
+возвращает список всех machine_id
+'''
+def GetMachineID(session: Session) -> list:
+    machine_id = [comp.MachineID for comp in session.query(Computer)]
+    return machine_id

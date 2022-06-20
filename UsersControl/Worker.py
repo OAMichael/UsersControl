@@ -12,7 +12,7 @@ from datetime import datetime, time
 import time
 import os
 import warnings
-from xdo import Xdo
+from xdo import xdo as Xdo
 import gi
 gi.require_version('Wnck', '3.0')
 from gi.repository import Wnck
