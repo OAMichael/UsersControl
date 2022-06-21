@@ -19,72 +19,12 @@ import zmq
 from msgpack import unpackb, packb
 
 
-# Function which parses newly brought message into separate lines and info
-def parse_message(info_string):
-    # There are three main blocks: processes, system and windows
-    message_list_windows, message_list_proc, message_list_integral = info_string.split("\nNEW_INFO\n")
-    
-    message_list_proc     = message_list_proc.split("\n")
-    message_list_integral = message_list_integral.split("\n")
-    message_list_windows  = message_list_windows.split("\n")
-    processes = []
-
-    # Parse for processes
-    for line in message_list_proc:
-        processes.append(tuple(line.split(",")))
-
-    # Parse for system info
-    integral_node = { 'proc_number': message_list_integral[0], 
-                      'disk_mem_usege':  message_list_integral[1], 
-                      'CPU_f_min': message_list_integral[2],
-                      'CPU_f_max': message_list_integral[3], 
-                      'CPU_f_cur': message_list_integral[4], 
-                      'Boot_time': message_list_integral[5], 
-                      'Total_mem_used': message_list_integral[6],  
-                      'first_window': "None",
-                      'first_window_percent': 0,
-                      'second_window': "None",
-                      'second_window_percent': 0,
-                      'third_window': "None",
-                      'third_window_percent': 0
-                      }
-
-    # Very primitive, but it works
-    for line in message_list_windows:
-        
-        if 'Current window name::::' in line:
-            integral_node['curent_window_active'] = line.split('::::')[1]
-            continue
-
-        if 'Maximum used window::::' in line:
-            integral_node['first_window']         = line.split('::::')[1]
-            integral_node['first_window_percent'] = line.split('::::')[2]
-            continue
-
-        if 'Second maximum used window::::' in line:
-            integral_node['second_window']         = line.split('::::')[1]
-            integral_node['second_window_percent'] = line.split('::::')[2]
-            continue
-
-        if 'Third maximum used window::::' in line:
-            integral_node['third_window']         = line.split('::::')[1]
-            integral_node['third_window_percent'] = line.split('::::')[2]
-            continue
-
-    return integral_node, processes
-
-
-def AddUserInfoFromFile(nickname, computer, machine_id, filename):
-    info_string = ""
-    file = open("n_" + filename, "r")
-    info_string = file.read()
-    file.close()
-    os.remove("n_" + filename)
+def AddUserInfo(nickname, computer, machine_id, data):
 
     # And parse all information
-    node, processes = parse_message(info_string)
+    integral_node, processes = data
     try:
-        DB_access.AddComputerInfo(DB_access.Session(), machine_id, computer, node)
+        DB_access.AddComputerInfo(DB_access.Session(), machine_id, computer, integral_node)
 
         for process in processes:
             proc_node = {   'app_name': process[0],
@@ -112,13 +52,13 @@ async def recv_and_process_loop(socket):
         adding = await socket.register_user(identity, data)
         if adding:
             DB_access.AddUser(Session(), nickname, machine_id, socket.machine_ids.index(machine_id) + 1, f"{host}:{port}")
-    elif command == b"file" and identity in socket.clientdict:
-        filename, filesize = unpackb(data)
-        await socket.recv_file(identity, data)
-        AddUserInfoFromFile(socket.clientdict[identity][0], 
-                            socket.machine_ids.index(socket.clientdict[identity][1]) + 1,
-                            socket.clientdict[identity][1],
-                            filename)
+
+    elif command == b"msgpack" and identity in socket.clientdict:
+        new_data = unpackb(data)
+        AddUserInfo(socket.clientdict[identity][0], 
+                    socket.machine_ids.index(socket.clientdict[identity][1]) + 1,
+                    socket.clientdict[identity][1],
+                    new_data)
 
 
 async def serve_loop(socket):

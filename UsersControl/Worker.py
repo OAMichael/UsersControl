@@ -28,7 +28,6 @@ else:
 
 # ----------------------------------------------- Info about processes -----------------------------------------------
 def get_processes_info():
-    info_string = "NEW_INFO\n"
     processes = []
     global window_pids
     for process in psutil.process_iter():
@@ -65,40 +64,33 @@ def get_processes_info():
             except psutil.AccessDenied:
                 pass
 
-            info_string = info_string + "{:s},{:s},{:s},{:d},{:d},{:d},{:d}\n".format(name, create_time, status,
-                                                                                      rss, vms, shared, data)
-            processes.append(name)
-    
-    info_string += "NEW_INFO\n"
-    info_string += str(len(processes)) + "\n"
+            processes.append( [name, 
+                               create_time,
+                               status,
+                               rss,
+                               vms,
+                               shared,
+                               data] )
 
-    file = open(f"{nickname}.dat", "a")
-    file.write(info_string)
-    file.close()
+    return processes
 
 
 # ------------------------------------------- Info about system as a whole -------------------------------------------
 def get_integral_info():
-    info_string = ""
+    global integral_node
     # get CPU frequency
     cpu_freq = psutil.cpu_freq()
 
     # get boot time of system
     boot_time = datetime.fromtimestamp(psutil.boot_time())
 
+    integral_node['disk_mem_usege'] = str(psutil.disk_usage('/').percent) 
+    integral_node['CPU_f_min'] = '{:0.2f}'.format(cpu_freq.min, 2)
+    integral_node['CPU_f_max'] = '{:0.2f}'.format(cpu_freq.max, 2) 
+    integral_node['CPU_f_cur'] = '{:0.2f}'.format(cpu_freq.current, 2) 
+    integral_node['Boot_time'] = str(boot_time) 
+    integral_node['Total_mem_used'] = str(psutil.virtual_memory().percent)
 
-    info = {'Disk memory usage':  str(psutil.disk_usage('/').percent), 'CPU frequency(min)': '{:0.2f}'.format(cpu_freq.min, 2),
-            'CPU frequency(max)': '{:0.2f}'.format(cpu_freq.max, 2), 'CPU frequency(current)': '{:0.2f}'.format(cpu_freq.current, 2), 
-            'Boot time': boot_time, 'Total memory used': str(psutil.virtual_memory().percent)}
-
-    for inf in info:
-        if not info[inf]:
-            info[inf] = 0
-        info_string += str(info[inf]) + "\n"
-
-    file = open(f"{nickname}.dat", "a")
-    file.write(info_string)
-    file.close()
 
 # ----------------------------------------------- Get list of windows ------------------------------------------------
 def get_winlist():
@@ -111,14 +103,13 @@ def get_winlist():
 
 # ------------------------------------------------ Info about windows ------------------------------------------------
 def get_win_info():
-    info_string = ""
+    global integral_node
     global window_pids
     # Create an object of Xdo and then acquire information
     xdo = Xdo()
 
     wlist = get_winlist()
     for w in wlist:
-        info_string += w.get_name() + "\n"
         new_name = w.get_name().encode()
         new_windows = xdo.search_windows(winname=new_name)
         if new_windows:
@@ -130,7 +121,7 @@ def get_win_info():
     # Active window
     try:
         xdo_window_name = xdo.get_window_name(xdo.get_active_window()).decode('UTF-8')
-        info_string += f"Current window name::::{xdo_window_name}\n"
+        integral_node['curent_window_active'] = xdo_window_name
 
         if xdo_window_name in win_activ.keys():
             win_activ[xdo_window_name] += 1
@@ -147,7 +138,8 @@ def get_win_info():
     try:
         window_max_used_1  = keys[values.index(values_sorted[0])]
         max_used_percent_1 = values_sorted[0] / loop_times * 100
-        info_string += f"Maximum used window::::{window_max_used_1}::::" + '{:0.2f}'.format(max_used_percent_1, 2) + "\n"
+        integral_node['first_window']         = window_max_used_1
+        integral_node['first_window_percent'] = '{:0.2f}'.format(max_used_percent_1, 2)
     except:
         pass
 
@@ -160,7 +152,8 @@ def get_win_info():
             window_max_used_2 = keys[k]
 
         max_used_percent_2 = values_sorted[1] / loop_times * 100
-        info_string += f"Second maximum used window::::{window_max_used_2}::::" + '{:0.2f}'.format(max_used_percent_2, 2) + "\n"
+        integral_node['second_window']         = window_max_used_2
+        integral_node['second_window_percent'] = '{:0.2f}'.format(max_used_percent_2, 2)
     except:
         pass
 
@@ -173,23 +166,20 @@ def get_win_info():
             window_max_used_3 = keys[k]
 
         max_used_percent_3 = values_sorted[2] / loop_times * 100
-        info_string += f"Third maximum used window::::{window_max_used_3}::::" + '{:0.2f}'.format(max_used_percent_3, 2) + "\n"
+        integral_node['third_window']         = window_max_used_3
+        integral_node['third_window_percent'] = '{:0.2f}'.format(max_used_percent_3, 2)
     except:
         pass
-
-    file = open(f"{nickname}.dat", "w")
-    file.write(info_string)
-    file.close()
-
 
 # function with obtaining all info
 def main_iteration():
 #--------------------------------------------- Windows info ---------------------------------------------#
     get_win_info()
 #-------------------------------------------- Processes info --------------------------------------------#
-    get_processes_info()
+    processes = get_processes_info()
 #--------------------------------------- System and computer info ---------------------------------------#
     get_integral_info()
+    return processes
 
 
 def generate_machine_id():
@@ -218,6 +208,14 @@ def main():
     # Connecting to server
     worker = TcpClient(host, port, nickname, machine_id)
 
+    global integral_node
+    integral_node = { 'first_window': "None",
+                      'first_window_percent': 0,
+                      'second_window': "None",
+                      'second_window_percent': 0,
+                      'third_window': "None",
+                      'third_window_percent': 0
+                      }
 
     global window_pids
     window_pids = []
@@ -230,22 +228,16 @@ def main():
     global loop_times
     loop_times = 0
 
-
     try:
         # loop everything and sleep for 5 seconds
         while True:
             loop_times += 1
-            main_iteration()
-            file = open(f"{nickname}.dat", "rb")
-            worker.sendfile(f"{nickname}.dat", file)
-            file.close()
-            os.remove(f"{nickname}.dat")
+            processes = main_iteration()
+            integral_node['proc_number'] = len(processes)            
+            worker.senddata( (integral_node, processes) )
             time.sleep(5)
-
     except:
         print("Closing connection...")
-        if os.path.isfile(f"{nickname}.dat"):
-            os.remove(f"{nickname}.dat")
         pass
 
 if __name__ == '__main__':

@@ -100,6 +100,11 @@ class TcpClient(object):
 
             self.client_socket.send(packb(data))
 
+    def senddata(self, data):
+        self.client_socket.send_multipart([
+            b"msgpack", 
+            packb(data),
+        ])
             
     def sendmsg(self, msg):
             self.client_socket.send_multipart([b"msg", msg.encode(ENCODE),])
