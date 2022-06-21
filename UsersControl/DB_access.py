@@ -75,7 +75,7 @@ info = {
     'third_window_percent' : 10, 
     'curent_window_active' : 'VK',
     'proc_number' : 200, 
-    'disk_mem_usege' : 1.1, 
+    'disk_mem_usage' : 1.1, 
     'CPU_f_min' : 20, 
     'CPU_f_max' : 20, 
     'CPU_f_cur' : 20, 
@@ -101,7 +101,7 @@ def AddComputerInfo(session: Session, machine_id: str, comp: int, info: dict):
 
     computer.proc_number = info['proc_number']
 
-    computer.disk_mem_usege = info['disk_mem_usege']
+    computer.disk_mem_usage = info['disk_mem_usage']
 
     computer.CPU_f_min = info['CPU_f_min']
     computer.CPU_f_max = info['CPU_f_max']

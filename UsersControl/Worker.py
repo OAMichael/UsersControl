@@ -84,12 +84,12 @@ def get_integral_info():
     # get boot time of system
     boot_time = datetime.fromtimestamp(psutil.boot_time())
 
-    integral_node['disk_mem_usege'] = str(psutil.disk_usage('/').percent) 
-    integral_node['CPU_f_min'] = '{:0.2f}'.format(cpu_freq.min, 2)
-    integral_node['CPU_f_max'] = '{:0.2f}'.format(cpu_freq.max, 2) 
-    integral_node['CPU_f_cur'] = '{:0.2f}'.format(cpu_freq.current, 2) 
+    integral_node['disk_mem_usage'] = psutil.disk_usage('/').percent 
+    integral_node['CPU_f_min'] = round(cpu_freq.min, 2)
+    integral_node['CPU_f_max'] = round(cpu_freq.max, 2) 
+    integral_node['CPU_f_cur'] = round(cpu_freq.current, 2) 
     integral_node['Boot_time'] = str(boot_time) 
-    integral_node['Total_mem_used'] = str(psutil.virtual_memory().percent)
+    integral_node['Total_mem_used'] = psutil.virtual_memory().percent
 
 
 # ----------------------------------------------- Get list of windows ------------------------------------------------
@@ -139,7 +139,7 @@ def get_win_info():
         window_max_used_1  = keys[values.index(values_sorted[0])]
         max_used_percent_1 = values_sorted[0] / loop_times * 100
         integral_node['first_window']         = window_max_used_1
-        integral_node['first_window_percent'] = '{:0.2f}'.format(max_used_percent_1, 2)
+        integral_node['first_window_percent'] = round(max_used_percent_1, 2)
     except:
         pass
 
@@ -153,7 +153,7 @@ def get_win_info():
 
         max_used_percent_2 = values_sorted[1] / loop_times * 100
         integral_node['second_window']         = window_max_used_2
-        integral_node['second_window_percent'] = '{:0.2f}'.format(max_used_percent_2, 2)
+        integral_node['second_window_percent'] = round(max_used_percent_2, 2)
     except:
         pass
 
@@ -167,7 +167,7 @@ def get_win_info():
 
         max_used_percent_3 = values_sorted[2] / loop_times * 100
         integral_node['third_window']         = window_max_used_3
-        integral_node['third_window_percent'] = '{:0.2f}'.format(max_used_percent_3, 2)
+        integral_node['third_window_percent'] = round(max_used_percent_3, 2)
     except:
         pass
 
