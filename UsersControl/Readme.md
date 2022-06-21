@@ -1,5 +1,5 @@
 ### This repository was created by [Pavel Filippenko](https://github.com/pavel-collab), [Mikhail Ovsiannikov](https://github.com/OAMichael) and [Andrey Barannikov](https://github.com/barannikovav).
-# ENGLISH
+<h1 align="center"> ENGLISH </h1>
 ### You will have to install these packages:
 ```console
 pip install psutil
@@ -93,7 +93,7 @@ Querying functions:
 
 
 
-# РУССКИЙ
+<h1 align="center"> РУССКИЙ </h1>
 ### Понадобится установить следующее:
 ```console
 pip install psutil
