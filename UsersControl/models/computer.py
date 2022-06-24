@@ -4,6 +4,7 @@ from models.Database import Base
 import datetime
 
 class Computer(Base):
+    __slots__ = ['__MachineId'] # инкапсулированное поле
     __tablename__ = 'computers'
 
     id = Column(Integer, primary_key=True)
@@ -28,7 +29,8 @@ class Computer(Base):
 
     date = Column(DateTime)
 
-    def __init__(self, number: int):
+    def __init__(self, MachineID: str, number: int):
+        self.__MachineId = MachineID
         self.number = number
         self.first_window = ''
         self.second_window = ''
@@ -47,6 +49,11 @@ class Computer(Base):
         self.Total_mem_used = 0
 
         self.date = datetime.datetime.now()
+
+    # на всякий случай, чтобы разработчик мог извлечь значение из кода
+    @property # <- применяется для гетеров   
+    def MachineId(self):
+        return self.__MachineId
     
     def __repr__(self) -> str:
         info = f'COMPUTER\n \
