@@ -1,3 +1,3 @@
-## Контроль за работой пользователей
-#### Вся информация внутри директории **UsersControl**
-#### Файлы `Server.cfg`, `Worker.cfg` и `Bot.cfg` - это примеры файлов конфигурации сервера, работника и телеграм-бота соответственно, которые в целях безопасности **не должны** лежать в той же директории, что и все скрипты
+## Controlling user work
+#### All description is in **UsersControl** directory
+#### Files `Server.cfg`, `Worker.cfg` and `Bot.cfg` are just examples of config files for server, worker and telegram bot respectively, which **should not** be in the same directory as all scripts.
